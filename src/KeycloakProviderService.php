@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Session;
 use Laravel\Socialite\Two\AbstractProvider;
 use Laravel\Socialite\Two\ProviderInterface;
 use GuzzleHttp\Exception\ClientException;
+use Edoaurahman\KeycloakSso\KeycloakProviderServiceInterface;
 use Carbon\Carbon;
 
 class KeycloakProviderService extends AbstractProvider implements ProviderInterface, KeycloakProviderServiceInterface
