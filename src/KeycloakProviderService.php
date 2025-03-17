@@ -2,9 +2,13 @@
 
 namespace Edoaurahman\KeycloakSso;
 
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Session;
 use Laravel\Socialite\Two\AbstractProvider;
 use Laravel\Socialite\Two\ProviderInterface;
 use GuzzleHttp\Exception\ClientException;
+use Carbon\Carbon;
 
 class KeycloakProviderService extends AbstractProvider implements ProviderInterface, KeycloakProviderServiceInterface
 {
@@ -23,6 +27,20 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
     public $realm;
 
     /**
+     * The field name for storing the Keycloak token.
+     *
+     * @var string
+     */
+    protected $tokenField;
+
+    /**
+     * The field name for storing the Keycloak refresh token.
+     *
+     * @var string
+     */
+    protected $refreshTokenField;
+
+    /**
      * Create a new provider instance.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -35,9 +53,11 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
     public function __construct($request, $clientId, $clientSecret, $redirectUrl, $guzzle = [])
     {
         parent::__construct($request, $clientId, $clientSecret, $redirectUrl, $guzzle);
-        
-        $this->baseUrl = config('keycloak.base_url');
-        $this->realm = config('keycloak.realms');
+
+        $this->baseUrl = Config::get('keycloak.base_url');
+        $this->realm = Config::get('keycloak.realms');
+        $this->tokenField = Config::get('keycloak.token_field', 'keycloak_token');
+        $this->refreshTokenField = Config::get('keycloak.refresh_token_field', 'keycloak_refresh_token');
     }
 
     protected function getAuthUrl($state)
@@ -57,11 +77,11 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
     {
         try {
             $response = $this->getHttpClient()->get(
-                $this->baseUrl . 'realms/' . $this->realm . '/protocol/openid-connect/userinfo',
+                "{$this->baseUrl}realms/{$this->realm}/protocol/openid-connect/userinfo",
                 [
                     'headers' => [
                         'Accept' => 'application/json',
-                        'Authorization' => 'Bearer ' . $token,
+                        'Authorization' => "Bearer {$token}",
                     ],
                 ]
             );
@@ -71,7 +91,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
             // Check if token expired (401 Unauthorized)
             if ($e->getResponse()->getStatusCode() === 401) {
                 // Try to refresh the token
-                $newToken = $this->refreshToken(session('refresh_token'));
+                $newToken = $this->refreshToken(Session::get('refresh_token'));
                 if ($newToken) {
                     // Retry with the new token
                     return $this->getUserByToken($newToken);
@@ -90,11 +110,15 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
     public function refreshToken($refreshToken = null): ?string
     {
         if (!$refreshToken) {
-            $refreshToken = auth()->user()->keycloak_refresh_token;
+            $user = Auth::user();
+            if (!$user || !isset($user->{$this->refreshTokenField})) {
+                return null;
+            }
+            $refreshToken = $user->{$this->refreshTokenField};
             if (!$refreshToken) {
                 return null;
             }
-        } else if (!auth()->user()->keycloak_refresh_token) {
+        } else if (!Auth::user() || !isset(Auth::user()->{$this->refreshTokenField})) {
             return null;
         }
 
@@ -110,18 +134,20 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
 
             $data = json_decode($response->getBody(), true);
             // Store the new tokens
-            session([
+            Session::put([
                 'access_token' => $data['access_token'],
                 'refresh_token' => $data['refresh_token'] ?? $refreshToken,
                 'expires_in' => $data['expires_in'],
-                'token_expiration' => now()->addSeconds($data['expires_in'])->timestamp,
+                'token_expiration' => Carbon::now()->addSeconds($data['expires_in'])->timestamp,
             ]);
-
             // update user's refresh token
-            auth()->user()->update([
-                'keycloak_token' => $data['access_token'],
-                'keycloak_refresh_token' => $data['refresh_token'] ?? $refreshToken,
-            ]);
+            $user = Auth::user();
+            if (method_exists($user, 'forceFill') && method_exists($user, 'save')) {
+                $user->forceFill([
+                    $this->tokenField => $data['access_token'],
+                    $this->refreshTokenField => $data['refresh_token'] ?? $refreshToken,
+                ])->save();
+            }
 
             return $data['access_token'];
         } catch (\Exception $e) {
@@ -142,7 +168,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
      */
     public function request($method, $url, $data = []): array
     {
-        $token = session('access_token');
+        $token = Session::get('access_token');
         if (!$token) {
             throw new \Exception('Access token not found');
         }
@@ -161,7 +187,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
             // Check if token expired (401 Unauthorized)
             if ($e->getResponse()->getStatusCode() === 401) {
                 // Try to refresh the token
-                $newToken = $this->refreshToken(session('refresh_token'));
+                $newToken = $this->refreshToken(Session::get('refresh_token'));
                 if ($newToken) {
                     // Retry with the new token
                     return $this->request($method, $url, $data);

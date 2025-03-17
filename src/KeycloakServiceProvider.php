@@ -2,6 +2,7 @@
 
 namespace Edoaurahman\KeycloakSso;
 
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\ServiceProvider;
 
 class KeycloakServiceProvider extends ServiceProvider
@@ -11,15 +12,17 @@ class KeycloakServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->bind(KeycloakProviderServiceInterface::class, function ($app) {
-            return new KeycloakProviderService(
+        $this->app->bind(
+            KeycloakProviderServiceInterface::class,
+            fn($app) =>
+            new KeycloakProviderService(
                 $app['request'],
-                config('keycloak.client_id'),
-                config('keycloak.client_secret'),
-                config('keycloak.redirect'),
-                config('keycloak.scopes', [])
-            );
-        });
+                Config::get('keycloak.client_id'),
+                Config::get('keycloak.client_secret'),
+                Config::get('keycloak.redirect'),
+                Config::get('keycloak.scopes', []),
+            )
+        );
     }
 
     /**
@@ -28,7 +31,7 @@ class KeycloakServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->publishes([
-            __DIR__ . '/config/keycloak.php' => config_path('keycloak.php'),
-        ], 'config');
+            __DIR__ . '/config/keycloak.php' => $this->app->configPath('keycloak.php'),
+        ], 'keycloak-config');
     }
 }
