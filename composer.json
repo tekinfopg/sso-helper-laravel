@@ -32,10 +32,13 @@
   "authors": [
     {
       "name": "Ridho Aulia' Rahman",
-      "email": "edoaurahman@gmail.com"
+      "email": "edoaurahman@gmail.com",
+      "homepage": "https://edodev.my.id",
+      "role": "Developer"
     }
   ],
   "minimum-stability": "stable",
+  
   "repositories": {
     "packagist": {
       "type": "composer",
