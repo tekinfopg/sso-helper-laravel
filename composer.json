@@ -37,9 +37,9 @@
   ],
   "minimum-stability": "stable",
   "repositories": {
-    "local": {
-      "type": "path",
-      "url": "../keycloak-sso"
+    "packagist": {
+      "type": "composer",
+      "url": "https://packagist.org"
     }
   }
 }
