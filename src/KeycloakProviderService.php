@@ -8,24 +8,56 @@ use GuzzleHttp\Exception\ClientException;
 
 class KeycloakProviderService extends AbstractProvider implements ProviderInterface, KeycloakProviderServiceInterface
 {
+    /**
+     * The base URL for Keycloak.
+     *
+     * @var string
+     */
+    public $baseUrl;
+
+    /**
+     * The Keycloak realm.
+     *
+     * @var string
+     */
+    public $realm;
+
+    /**
+     * Create a new provider instance.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  string  $clientId
+     * @param  string  $clientSecret
+     * @param  string  $redirectUrl
+     * @param  array  $guzzle
+     * @return void
+     */
+    public function __construct($request, $clientId, $clientSecret, $redirectUrl, $guzzle = [])
+    {
+        parent::__construct($request, $clientId, $clientSecret, $redirectUrl, $guzzle);
+        
+        $this->baseUrl = config('keycloak.base_url');
+        $this->realm = config('keycloak.realms');
+    }
+
     protected function getAuthUrl($state)
     {
         return $this->buildAuthUrlFromBase(
-            config('keycloak.base_url') . 'realms/' . config('keycloak.realms') . '/protocol/openid-connect/auth',
+            $this->baseUrl . 'realms/' . $this->realm . '/protocol/openid-connect/auth',
             $state
         );
     }
 
     protected function getTokenUrl()
     {
-        return config('keycloak.base_url') . 'realms/' . config('keycloak.realms') . '/protocol/openid-connect/token';
+        return $this->baseUrl . 'realms/' . $this->realm . '/protocol/openid-connect/token';
     }
 
     protected function getUserByToken($token)
     {
         try {
             $response = $this->getHttpClient()->get(
-                config('keycloak.base_url') . 'realms/' . config('keycloak.realms') . '/protocol/openid-connect/userinfo',
+                $this->baseUrl . 'realms/' . $this->realm . '/protocol/openid-connect/userinfo',
                 [
                     'headers' => [
                         'Accept' => 'application/json',
@@ -148,7 +180,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
      */
     public function getClientList(): array
     {
-        return $this->request('GET', config('keycloak.base_url') . 'admin/realms/' . config('keycloak.realms') . '/clients');
+        return $this->request('GET', $this->baseUrl . 'admin/realms/' . $this->realm . '/clients');
     }
 
 
