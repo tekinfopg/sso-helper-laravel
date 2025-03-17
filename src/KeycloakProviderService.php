@@ -18,7 +18,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
 
     protected function getTokenUrl()
     {
-        return config(key: 'keycloak.base_url') . 'realms/' . config('keycloak.realms') . '/protocol/openid-connect/token';
+        return config('keycloak.base_url') . 'realms/' . config('keycloak.realms') . '/protocol/openid-connect/token';
     }
 
     protected function getUserByToken($token)

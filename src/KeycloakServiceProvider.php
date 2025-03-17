@@ -28,7 +28,7 @@ class KeycloakServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->publishes([
-            __DIR__ . '/../config/keycloak.php' => config_path('keycloak.php'),
+            __DIR__ . '/config/keycloak.php' => config_path('keycloak.php'),
         ], 'config');
     }
 }
