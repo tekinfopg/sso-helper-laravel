@@ -98,6 +98,59 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
         }
     }
 
+    /**
+     * Function to handle request user, GET POST PUT DELETE etc
+     * 
+     * @param string $method
+     * @param string $url
+     * @param array $data
+     * @return array
+     * @throws \Exception
+     * 
+     */
+    public function request($method, $url, $data = []): array
+    {
+        $token = session('access_token');
+        if (!$token) {
+            throw new \Exception('Access token not found');
+        }
+
+        try {
+            $response = $this->getHttpClient()->request($method, $url, [
+                'headers' => [
+                    'Accept' => 'application/json',
+                    'Authorization' => 'Bearer ' . $token,
+                ],
+                'json' => $data,
+            ]);
+
+            return json_decode($response->getBody(), true);
+        } catch (ClientException $e) {
+            // Check if token expired (401 Unauthorized)
+            if ($e->getResponse()->getStatusCode() === 401) {
+                // Try to refresh the token
+                $newToken = $this->refreshToken(session('refresh_token'));
+                if ($newToken) {
+                    // Retry with the new token
+                    return $this->request($method, $url, $data);
+                }
+            }
+            throw $e;
+        }
+    }
+
+    /**
+     * get client id list
+     * 
+     * @return array
+     * @throws \Exception
+     * 
+     */
+    public function getClientList(): array
+    {
+        return $this->request('GET', config('keycloak.base_url') . 'admin/realms/' . config('keycloak.realms') . '/clients');
+    }
+
 
     /**
      * Map the raw user array to a Socialite User instance.

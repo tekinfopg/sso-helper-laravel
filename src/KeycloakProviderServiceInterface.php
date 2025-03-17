@@ -10,4 +10,6 @@ interface KeycloakProviderServiceInterface
      * @return void
      */
     public function refreshToken($refreshToken = null): ?string;
+    public function request($method, $url, $data = []): array;
+    public function getClientList(): array;
 }
