@@ -178,7 +178,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
             $response = $this->getHttpClient()->request($method, $url, [
                 'headers' => [
                     'Accept' => 'application/json',
-                    'Authorization' => "'Bearer {$token}",
+                    'Authorization' => "Bearer {$token}",
                 ],
                 'json' => $data,
             ]);
