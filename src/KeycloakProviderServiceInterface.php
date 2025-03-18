@@ -79,4 +79,12 @@ interface KeycloakProviderServiceInterface
      * @return array New client secret information
      */
     public function regenerateClientSecret($id): array;
+
+    /**
+     * Get Roles of a user
+     * 
+     * @param string $id
+     * @return array
+     */
+    public function getUserRoles($id): array;
 }

@@ -312,4 +312,17 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
     {
         return $this->request('POST', "{$this->baseUrl}admin/realms/{$this->realm}/clients/{$id}/client-secret");
     }
+
+    /**
+     * Get Roles of a user
+     * 
+     * @param string $id
+     * @return array
+     * @throws \Exception
+     * 
+     */
+    public function getUserRoles($id): array
+    {
+        return $this->request('GET', "{$this->baseUrl}admin/realms/{$this->realm}/users/{$id}/role-mappings");
+    }
 }
