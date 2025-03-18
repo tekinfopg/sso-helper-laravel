@@ -87,4 +87,13 @@ interface KeycloakProviderServiceInterface
      * @return array
      */
     public function getUserRoles($id): array;
+
+    /**
+     * Get all roles for the realm or client
+     * 
+     * @param string $clientUuid
+     * @return array
+     * 
+     */
+    public function getRoles($clientUuid): array;
 }
