@@ -44,10 +44,18 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
     /**
      * Create a new provider instance.
      *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  string  $clientId
+     * @param  string  $clientSecret
+     * @param  string  $redirectUrl
+     * @param  array  $guzzle
+     * @return void
      */
-    public function __construct($baseUrl)
+    public function __construct($request, $clientId, $clientSecret, $redirectUrl, $guzzle = [])
     {
-        $this->baseUrl = $baseUrl ?? Config::get('keycloak.base_url');
+        parent::__construct($request, $clientId, $clientSecret, $redirectUrl, $guzzle);
+
+        $this->baseUrl = Config::get('keycloak.base_url');
         $this->realm = Config::get('keycloak.realms');
         $this->tokenField = Config::get('keycloak.token_field', 'keycloak_token');
         $this->refreshTokenField = Config::get('keycloak.refresh_token_field', 'keycloak_refresh_token');
