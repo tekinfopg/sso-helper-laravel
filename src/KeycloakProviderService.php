@@ -19,13 +19,6 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
      * @var string
      */
     public $baseUrl;
-    
-    /**
-     * The custom base URL for Keycloak.
-     *
-     * @var string
-     */
-    public $customBaseUrl;
 
     /**
      * The Keycloak realm.
@@ -68,6 +61,21 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
         $this->refreshTokenField = Config::get('keycloak.refresh_token_field', 'keycloak_refresh_token');
     }
 
+    /**
+     * Set the base URL for Keycloak.
+     *
+     * @param string $baseUrl
+     * @return void
+     */
+    public function setBaseUrl($baseUrl): void
+    {
+        $this->baseUrl = $baseUrl;
+    }
+    /**
+     * Get the base URL for Keycloak.
+     *
+     * @return string
+     */
     protected function getAuthUrl($state)
     {
         return $this->buildAuthUrlFromBase(
@@ -76,11 +84,23 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
         );
     }
 
+    /**
+     * Get the access token URL for Keycloak.
+     *
+     * @return string
+     */
     protected function getTokenUrl()
     {
         return "{$this->baseUrl}realms/{$this->realm}/protocol/openid-connect/token";
     }
 
+    /**
+     * Get the user by token
+     *
+     * @param string $token
+     * @return array
+     * @throws \Exception
+     */
     protected function getUserByToken($token)
     {
         try {

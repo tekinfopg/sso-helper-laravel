@@ -9,6 +9,12 @@ namespace Edoaurahman\KeycloakSso;
 interface KeycloakProviderServiceInterface
 {
     /**
+     * set Base URL
+     * @param string $baseUrl
+     * @return void
+     */
+    public function setBaseUrl($baseUrl): void;
+    /**
      * Refresh the access token using the refresh token
      * @param string $refreshToken
      * @return void
