@@ -38,12 +38,29 @@ This package provides integration between Laravel and Keycloak, enabling Single 
 
 ## Usage
 
-- **KeycloakProviderService**  
-  This class extends Laravel Socialite’s AbstractProvider, offering methods to grab tokens, refresh them, and interact with the Keycloak Admin API.
+# KeycloakProviderService Interface
 
-- **Retrieving the session token**  
-  The access token is stored in Laravel’s session as `access_token`, and the refresh token as `refresh_token`.  
-  For custom handling, you can override or extend methods within `KeycloakProviderService`.
+| Method                            | Description                                                 | Parameters                      | Return Type     |
+| --------------------------------- | ----------------------------------------------------------- | --------------------------------| --------------- |
+| `setBaseUrl($baseUrl)`           | Set the base Keycloak URL.                                 | `string $baseUrl`               | `void`          |
+| `setRealm($realm)`               | Set the Keycloak realm.                                    | `string $realm`                 | `void`          |
+| `setTokenField($tokenField)`      | Set the custom token field.                                | `string $tokenField`            | `void`          |
+| `setRefreshTokenField($refreshTokenField)` | Set the custom refresh token field.                  | `string $refreshTokenField`     | `void`          |
+| `refreshToken($refreshToken = null)` | Refresh the Keycloak access token.                      | `string $refreshToken` (nullable)| `string|null`   |
+| `request($method, $url, $data = [])` | Generic request to Keycloak API.                        | `string $method`, `string $url`, `array $data` | `array` |
+| `getClientList()`                | Get Keycloak client list.                                  | *N/A*                           | `array`         |
+| `getUserList()`                  | Get Keycloak user list.                                    | *N/A*                           | `array`         |
+| `getUser($id)`                   | Get a single user.                                         | `string|int $id`                | `array`         |
+| `createUser($data)`             | Create a new Keycloak user.                                | `array $data`                   | `array`         |
+| `updateUser($id, $data)`        | Update an existing user.                                   | `string|int $id`, `array $data` | `array`         |
+| `deleteUser($id)`               | Delete a user.                                             | `string|int $id`                | `array`         |
+| `regenerateClientSecret($id)`    | Regenerate client’s secret.                                | `string|int $id`                | `array`         |
+| `getUserRoles($id)`             | Get roles assigned to a user.                              | `string $id`                    | `array`         |
+| `getRoles($clientUuid)`         | Get all roles by client or realm.                          | `string $clientUuid`            | `array`         |
+| `getUsersWithRole($roleName)`    | Get all users with a given role.                           | `string $roleName`              | `array`         |
+| `getUsersWithRoles($clientUuid)` | Get all users and their roles for a client.               | `string $clientUuid`            | `array`         |
+| `createRole($clientUuid, $data)` | Create a role for the realm or client.                    | `string $clientUuid`, `array $data` | `array`      |
+| `Other method on progress` | -                    | - |   -      |
 
 ## Example
 
