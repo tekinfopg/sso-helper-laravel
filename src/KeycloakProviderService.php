@@ -19,6 +19,13 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
      * @var string
      */
     public $baseUrl;
+    
+    /**
+     * The custom base URL for Keycloak.
+     *
+     * @var string
+     */
+    public $customBaseUrl;
 
     /**
      * The Keycloak realm.
@@ -55,7 +62,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
     {
         parent::__construct($request, $clientId, $clientSecret, $redirectUrl, $guzzle);
 
-        $this->baseUrl = Config::get('keycloak.base_url');
+        $this->baseUrl = $this->customBaseUrl ?? Config::get('keycloak.base_url');
         $this->realm = Config::get('keycloak.realms');
         $this->tokenField = Config::get('keycloak.token_field', 'keycloak_token');
         $this->refreshTokenField = Config::get('keycloak.refresh_token_field', 'keycloak_refresh_token');
