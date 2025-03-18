@@ -14,6 +14,29 @@ interface KeycloakProviderServiceInterface
      * @return void
      */
     public function setBaseUrl($baseUrl): void;
+    
+    /**
+     * set realm
+     * @param string $realm
+     * @return void
+     */
+    public function setRealm($realm): void;
+
+    /**
+     * set token field
+     * @param string $tokenField
+     * @return void
+     */
+    public function setTokenField($tokenField): void;
+
+    /**
+     * set refresh token field
+     * 
+     * @param string $refreshTokenField
+     * @return void
+     */
+    public function setRefreshTokenField($refreshTokenField): void;
+
     /**
      * Refresh the access token using the refresh token
      * @param string $refreshToken

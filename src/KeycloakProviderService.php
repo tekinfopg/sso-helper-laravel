@@ -55,7 +55,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
     {
         parent::__construct($request, $clientId, $clientSecret, $redirectUrl, $guzzle);
 
-        $this->baseUrl = $this->customBaseUrl ?? Config::get('keycloak.base_url');
+        $this->baseUrl = Config::get('keycloak.base_url');
         $this->realm = Config::get('keycloak.realms');
         $this->tokenField = Config::get('keycloak.token_field', 'keycloak_token');
         $this->refreshTokenField = Config::get('keycloak.refresh_token_field', 'keycloak_refresh_token');
@@ -71,6 +71,39 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
     {
         $this->baseUrl = $baseUrl;
     }
+
+    /**
+     * set realm
+     * @param string $realm
+     * @return void
+     */
+    public function setRealm($realm): void
+    {
+        $this->realm = $realm;
+    }
+
+    /**
+     * Set the token field name.
+     *
+     * @param string $tokenField
+     * @return void
+     */
+    public function setTokenField($tokenField): void
+    {
+        $this->tokenField = $tokenField;
+    }
+
+    /**
+     * Set the refresh token field name.
+     *
+     * @param string $refreshTokenField
+     * @return void
+     */
+    public function setRefreshTokenField($refreshTokenField): void
+    {
+        $this->refreshTokenField = $refreshTokenField;
+    }
+    
     /**
      * Get the base URL for Keycloak.
      *
