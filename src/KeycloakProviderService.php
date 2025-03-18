@@ -64,14 +64,14 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
     protected function getAuthUrl($state)
     {
         return $this->buildAuthUrlFromBase(
-            $this->baseUrl . 'realms/' . $this->realm . '/protocol/openid-connect/auth',
+            "{$this->baseUrl}realms/{$this->realm}/protocol/openid-connect/auth",
             $state
         );
     }
 
     protected function getTokenUrl()
     {
-        return $this->baseUrl . 'realms/' . $this->realm . '/protocol/openid-connect/token';
+        return "{$this->baseUrl}realms/{$this->realm}/protocol/openid-connect/token";
     }
 
     protected function getUserByToken($token)
@@ -178,7 +178,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
             $response = $this->getHttpClient()->request($method, $url, [
                 'headers' => [
                     'Accept' => 'application/json',
-                    'Authorization' => 'Bearer ' . $token,
+                    'Authorization' => "'Bearer {$token}",
                 ],
                 'json' => $data,
             ]);
@@ -207,7 +207,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
      */
     public function getClientList(): array
     {
-        return $this->request('GET', $this->baseUrl . 'admin/realms/' . $this->realm . '/clients');
+        return $this->request('GET', "{$this->baseUrl}admin/realms/{$this->realm}/clients");
     }
 
 
@@ -226,5 +226,83 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
             'email' => $user['email'] ?? null,
             'avatar' => $user['picture'] ?? null,
         ]);
+    }
+
+    /**
+     * get user list
+     * 
+     * @return array
+     * @throws \Exception
+     * 
+     */
+    public function getUserList(): array
+    {
+        return $this->request('GET', "{$this->baseUrl}admin/realms/{$this->realm}/users");
+    }
+
+    /**
+     * get user by id
+     * 
+     * @param string $id
+     * @return array
+     * @throws \Exception
+     * 
+     */
+    public function getUser($id): array
+    {
+        return $this->request('GET', "{$this->baseUrl}admin/realms/{$this->realm}/users/{$id}");
+    }
+
+    /**
+     * create user
+     * 
+     * @param array $data
+     * @return array
+     * @throws \Exception
+     * 
+     */
+    public function createUser($data): array
+    {
+        return $this->request('POST', "{$this->baseUrl}admin/realms/{$this->realm}/users", $data);
+    }
+
+    /**
+     * update user
+     * 
+     * @param string $id
+     * @param array $data
+     * @return array
+     * @throws \Exception
+     * 
+     */
+    public function updateUser($id, $data): array
+    {
+        return $this->request('PUT', "{$this->baseUrl}admin/realms/{$this->realm}/users/{$id}", $data);
+    }
+
+    /**
+     * delete user
+     * 
+     * @param string $id
+     * @return array
+     * @throws \Exception
+     * 
+     */
+    public function deleteUser($id): array
+    {
+        return $this->request('DELETE', "{$this->baseUrl}admin/realms/{$this->realm}/users/{$id}");
+    }
+
+    /**
+     * regenerate client secret
+     * 
+     * @param string $id
+     * @return array
+     * @throws \Exception
+     * 
+     */
+    public function regenerateClientSecret($id): array
+    {
+        return $this->request('POST', "{$this->baseUrl}admin/realms/{$this->realm}/clients/{$id}/client-secret");
     }
 }
