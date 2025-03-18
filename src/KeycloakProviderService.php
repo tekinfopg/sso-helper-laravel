@@ -163,7 +163,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
      * @param string $method
      * @param string $url
      * @param array $data
-     * @return array
+     * @return mixed
      * @throws \Exception
      * 
      */
@@ -183,7 +183,14 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                 'json' => $data,
             ]);
 
-            return json_decode($response->getBody(), true);
+            $result = json_decode($response->getBody(), true);
+
+            // Handle null response
+            if ($result === null) {
+                return [];
+            }
+
+            return $result;
         } catch (ClientException $e) {
             // Check if token expired (401 Unauthorized)
             if ($e->getResponse()->getStatusCode() === 401) {
