@@ -370,8 +370,25 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
         foreach ($users as $key => $user) {
             $userRoles = $this->getUserRoles($user['id']);
             $users[$key]['roles'] = [];
-            foreach ($userRoles as $role) {
-                $users[$key]['roles'][] = $roleMappings[$role['id']];
+
+            // Process client-specific roles for the requested client
+            if (isset($userRoles['clientMappings'])) {
+                foreach ($userRoles['clientMappings'] as $clientName => $mapping) {
+                    if (isset($mapping['mappings'])) {
+                        foreach ($mapping['mappings'] as $role) {
+                            if (isset($roleMappings[$role['id']])) {
+                                $users[$key]['roles'][] = $roleMappings[$role['id']];
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Also include realm roles if needed
+            if (isset($userRoles['realmMappings'])) {
+                foreach ($userRoles['realmMappings'] as $role) {
+                    $users[$key]['roles'][] = $role['name'] ?? '';
+                }
             }
         }
 
