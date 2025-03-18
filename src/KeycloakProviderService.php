@@ -394,4 +394,17 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
 
         return $users;
     }
+
+    /**
+     * Create a new role for the realm or client
+     * 
+     * @param string $clientUuid
+     * @param array $data
+     * @return array
+     * 
+     */
+    public function createRole($clientUuid, $data): array
+    {
+        return $this->request('POST', "{$this->baseUrl}admin/realms/{$this->realm}/clients/{$clientUuid}/roles", $data);
+    }
 }

@@ -114,4 +114,14 @@ interface KeycloakProviderServiceInterface
      * 
      */
     public function getUsersWithRoles($clientUuid): array;
+
+    /**
+     * Create a new role for the realm or client
+     * 
+     * @param string $clientUuid
+     * @param array $data
+     * @return array
+     * 
+     */
+    public function createRole($clientUuid, $data): array;
 }
