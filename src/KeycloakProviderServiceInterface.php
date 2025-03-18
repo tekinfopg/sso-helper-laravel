@@ -105,4 +105,13 @@ interface KeycloakProviderServiceInterface
      * 
      */
     public function getUsersWithRole($roleName): array;
+
+    /**
+     * Get all users with their roles
+     * 
+     * @param string $clientUuid
+     * @return array
+     * 
+     */
+    public function getUsersWithRoles($clientUuid): array;
 }
