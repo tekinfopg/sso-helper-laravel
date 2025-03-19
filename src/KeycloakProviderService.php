@@ -103,7 +103,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
     {
         $this->refreshTokenField = $refreshTokenField;
     }
-    
+
     /**
      * Get the base URL for Keycloak.
      *
@@ -466,5 +466,23 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
     public function createRole($clientUuid, $data): array
     {
         return $this->request('POST', "{$this->baseUrl}admin/realms/{$this->realm}/clients/{$clientUuid}/roles", $data);
+    }
+
+    /**
+     * Get Client UUID by client ID
+     * 
+     * @param string $clientId
+     * @return string
+     * 
+     */
+    public function getClientUuid($clientId): string
+    {
+        $clients = $this->getClientList();
+        foreach ($clients as $client) {
+            if ($client['clientId'] === $clientId) {
+                return $client['id'];
+            }
+        }
+        return '';
     }
 }

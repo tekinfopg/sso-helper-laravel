@@ -153,4 +153,13 @@ interface KeycloakProviderServiceInterface
      * 
      */
     public function createRole($clientUuid, $data): array;
+
+    /**
+     * Get Client UUID by client ID
+     * 
+     * @param string $clientId
+     * @return string
+     * 
+     */
+    public function getClientUuid($clientId): string;
 }
