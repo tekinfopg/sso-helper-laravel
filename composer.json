@@ -15,7 +15,7 @@
     "socialiteproviders/keycloak": "^5.3",
     "socialiteproviders/manager": "^4.8",
     "laravel/socialite": "^5.18",
-    "guzzlehttp/guzzle": "^7.0"
+    "guzzlehttp/guzzle": "^7.8.2"
   },
   "extra": {
     "laravel": {

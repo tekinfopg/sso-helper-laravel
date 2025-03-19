@@ -162,4 +162,29 @@ interface KeycloakProviderServiceInterface
      * 
      */
     public function getClientUuid($clientId): string;
+
+    /**
+     * Get user sessions for client Returns a list of user sessions associated with this client
+     * 
+     * @param string $clientUuid
+     * @return array
+     * 
+     */
+    public function getUserSessions($clientUuid): array;
+
+    /**
+     * Get client session stats Returns a JSON map.
+     * 
+     * @return array
+     * 
+     */
+    public function getClientSessionStats(): array;
+
+    /**
+     * Get sessions associated with the user
+     * 
+     * @param string $userId
+     * @return array
+     */
+    public function getUserSessionsByUserId($userId): array;
 }

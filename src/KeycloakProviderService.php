@@ -485,4 +485,39 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
         }
         return '';
     }
+
+    /**
+     * Get user sessions for client Returns a list of user sessions associated with this client
+     * 
+     * @param string $clientUuid
+     * @return array
+     * 
+     */
+    public function getUserSessions($clientUuid): array
+    {
+        return $this->request('GET', "{$this->baseUrl}admin/realms/{$this->realm}/clients/{$clientUuid}/user-sessions");
+    }
+
+    /**
+     * Get client session stats Returns a JSON map.
+     * 
+     * @param string $clientUuid
+     * @return array
+     * 
+     */
+    public function getClientSessionStats(): array
+    {
+        return $this->request('GET', "{$this->baseUrl}admin/realms/{$this->realm}/client-session-stats");
+    }
+
+    /**
+     * Get sessions associated with the user
+     * 
+     * @param string $userId
+     * @return array
+     */
+    public function getUserSessionsByUserId($userId): array
+    {
+        return $this->request('GET', "{$this->baseUrl}admin/realms/{$this->realm}/users/{$userId}/sessions");
+    }
 }
