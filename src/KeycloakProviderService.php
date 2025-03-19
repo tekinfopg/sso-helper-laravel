@@ -523,4 +523,204 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
     {
         return $this->request('GET', "{$this->baseUrl}admin/realms/{$this->realm}/users/{$userId}/sessions");
     }
+    
+    /**
+     * Retrieves the session details of the currently logged-in user.
+     *
+     * @return array
+     * An array containing details of each session.
+     * 
+     */
+    public function getCurrentUserSessions(): array
+    {
+        try {// Get token from session or user model
+            $token = Session::get('access_token') ?? (Auth::user() ? Auth::user()->{$this->tokenField} : null);
+            
+            $response = $this->getHttpClient()->get(
+                "{$this->baseUrl}realms/{$this->realm}/account/sessions/devices",
+                [
+                    'headers' => [
+                        'Accept' => 'application/json',
+                        'Authorization' => "Bearer {$token}",
+                    ],
+                ]
+            );
+
+            return json_decode($response->getBody(), true);
+        } catch (ClientException $e) {
+            // Check if token expired (401 Unauthorized)
+            if ($e->getResponse()->getStatusCode() === 401) {
+                // Try to refresh the token
+                $newToken = $this->refreshToken(Session::get('refresh_token'));
+                if ($newToken) {
+                    // Retry with the new token
+                    return $this->getCurrentUserSessions();
+                }
+            }
+            throw $e;
+        }
+    }
+
+    /**
+     * Retrieves the list of clients associated with the currently logged-in user.
+     * 
+     * @return array
+     * An array containing details of each client.
+     * 
+     */
+    public function getCurrentUserClients(): array
+    {
+        // Get token from session or user model
+        $token = Session::get('access_token') ?? (Auth::user() ? Auth::user()->{$this->tokenField} : null);
+        
+        try {
+            $response = $this->getHttpClient()->get(
+                "{$this->baseUrl}realms/{$this->realm}/account/applications",
+                [
+                    'headers' => [
+                        'Accept' => 'application/json',
+                        'Authorization' => "Bearer {$token}",
+                    ],
+                ]
+            );
+
+            return json_decode($response->getBody(), true);
+        } catch (ClientException $e) {
+            // Check if token expired (401 Unauthorized)
+            if ($e->getResponse()->getStatusCode() === 401) {
+                // Try to refresh the token
+                $newToken = $this->refreshToken(Session::get('refresh_token'));
+                if ($newToken) {
+                    // Retry with the new token
+                    return $this->getCurrentUserClients();
+                }
+            }
+            throw $e;
+        }
+    }
+    
+    /**
+     * Retrieves the authentication credentials associated with the currently logged-in user.
+     *
+     * @return array
+     * An array containing details of user credentials.
+     * 
+     */
+    public function getCurrentUserCredentials(): array
+    {
+        // Get token from session or user model
+        $token = Session::get('access_token') ?? (Auth::user() ? Auth::user()->{$this->tokenField} : null);
+        
+        try {
+            $response = $this->getHttpClient()->get(
+                "{$this->baseUrl}realms/{$this->realm}/account/credentials",
+                [
+                    'headers' => [
+                        'Accept' => 'application/json',
+                        'Authorization' => "Bearer {$token}",
+                    ],
+                ]
+            );
+
+            return json_decode($response->getBody(), true);
+        } catch (ClientException $e) {
+            // Check if token expired (401 Unauthorized)
+            if ($e->getResponse()->getStatusCode() === 401) {
+                // Try to refresh the token
+                $newToken = $this->refreshToken(Session::get('refresh_token'));
+                if ($newToken) {
+                    // Retry with the new token
+                    return $this->getCurrentUserCredentials();
+                }
+            }
+            throw $e;
+        }
+    }
+    
+    /**
+     * Retrieves the profile information of the currently logged-in user.
+     * 
+     * @return array
+     * An array containing user profile details.
+     *
+     */
+    public function getCurrentUserProfile(): array
+    {
+        // Get token from session or user model
+        $token = Session::get('access_token') ?? (Auth::user() ? Auth::user()->{$this->tokenField} : null);
+        
+        try {
+            $response = $this->getHttpClient()->get(
+                "{$this->baseUrl}realms/{$this->realm}/account",
+                [
+                    'headers' => [
+                        'Accept' => 'application/json',
+                        'Authorization' => "Bearer {$token}",
+                    ],
+                ]
+            );
+
+            $body = json_decode($response->getBody(), true);
+
+            $profile = [
+                'id' => $body['id'] ?? null,
+                'username' => $body['username'] ?? null,
+                'firstName' => $body['firstName'] ?? null,
+                'lastName' => $body['lastName'] ?? null,
+                'email' => $body['email'] ?? null,
+                'emailVerified' => $body['emailVerified'] ?? null,
+            ];
+
+            return $profile;
+        } catch (ClientException $e) {
+            // Check if token expired (401 Unauthorized)
+            if ($e->getResponse()->getStatusCode() === 401) {
+                // Try to refresh the token
+                $newToken = $this->refreshToken(Session::get('refresh_token'));
+                if ($newToken) {
+                    // Retry with the new token
+                    return $this->getCurrentUserProfile();
+                }
+            }
+            throw $e;
+        }
+    }
+    
+    /**
+     * Retrieves the groups associated with the currently logged-in user.
+     * 
+     * @return array
+     * An array containing details of each group.
+     * 
+     */
+    public function getCurrentUserGroups(): array
+    {
+        // Get token from session or user model
+        $token = Session::get('access_token') ?? (Auth::user() ? Auth::user()->{$this->tokenField} : null);
+        
+        try {
+            $response = $this->getHttpClient()->get(
+                "{$this->baseUrl}realms/{$this->realm}/account/groups",
+                [
+                    'headers' => [
+                        'Accept' => 'application/json',
+                        'Authorization' => "Bearer {$token}",
+                    ],
+                ]
+            );
+
+            return json_decode($response->getBody(), true);
+        } catch (ClientException $e) {
+            // Check if token expired (401 Unauthorized)
+            if ($e->getResponse()->getStatusCode() === 401) {
+                // Try to refresh the token
+                $newToken = $this->refreshToken(Session::get('refresh_token'));
+                if ($newToken) {
+                    // Retry with the new token
+                    return $this->getCurrentUserGroups();
+                }
+            }
+            throw $e;
+        }
+    }
 }
