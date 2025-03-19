@@ -229,8 +229,11 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
      */
     public function request($method, $url, $data = []): array
     {
-        $token = Session::get('access_token');
-        if (!$token) {
+        // Get token from session or user model
+        $token = Session::get('access_token') ?? (Auth::user() ? Auth::user()->{$this->tokenField} : null);
+
+        // Try to refresh if no token is found
+        if (!$token && !($token = $this->refreshToken(Session::get('refresh_token')))) {
             throw new \Exception('Access token not found');
         }
 
