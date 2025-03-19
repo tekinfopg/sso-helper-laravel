@@ -4,7 +4,7 @@ This package provides integration between Laravel and Keycloak, enabling Single 
 
 ## Requirements
 
-- PHP ^7.4 || ^8.1
+- PHP ^8.1
 - Laravel ^8.0 || ^9.0 || ^10.0 || ^11.0 || ^12.0
 
 ## Installation
@@ -18,9 +18,13 @@ This package provides integration between Laravel and Keycloak, enabling Single 
    ```bash
    php artisan vendor:publish --provider="Edoaurahman\\KeycloakSso\\KeycloakServiceProvider" --tag=keycloak-config
    ```
+   or
+   ```bash
+   php artisan vendor:publish --tag=keycloak-config
+   ```
    This will publish a config file at `config/keycloak.php`. Adjust the settings to match your Keycloak realm, tokens, etc.
 
-3. Set up the fields for storing tokens in your User model:
+4. Set up the fields for storing tokens in your User model:
    ```php
    // in your database migration
    Schema::table('users', function (Blueprint $table) {
