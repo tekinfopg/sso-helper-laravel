@@ -4,7 +4,7 @@ This package provides integration between Laravel and Keycloak, enabling Single 
 
 ## Requirements
 
-- PHP ^7.4 || ^8.1
+- PHP ^8.1
 - Laravel ^8.0 || ^9.0 || ^10.0 || ^11.0 || ^12.0
 
 ## Installation
