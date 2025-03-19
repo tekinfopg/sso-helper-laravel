@@ -185,6 +185,52 @@ interface KeycloakProviderServiceInterface
      * 
      * @param string $userId
      * @return array
+     * 
      */
     public function getUserSessionsByUserId($userId): array;
+
+    /**
+     * Retrieves the session details of the currently logged-in user.
+     *
+     * @return array
+     * An array containing details of each session.
+     * 
+     */
+    public function getCurrentUserSessions(): array;
+
+    /**
+     * Retrieves the list of clients associated with the currently logged-in user.
+     * 
+     * @return array
+     * An array containing details of each client.
+     * 
+     */
+    public function getCurrentUserClients(): array;
+    
+    /**
+     * Retrieves the authentication credentials associated with the currently logged-in user.
+     *
+     * @return array
+     * An array containing details of user credentials.
+     * 
+     */
+    public function getCurrentUserCredentials(): array;
+    
+    /**
+     * Retrieves the profile information of the currently logged-in user.
+     * 
+     * @return array
+     * An array containing user profile details.
+     *
+     */
+    public function getCurrentUserProfile(): array;
+    
+    /**
+     * Retrieves the groups associated with the currently logged-in user.
+     * 
+     * @return array
+     * An array containing details of each group.
+     * 
+     */
+    public function getCurrentUserGroups(): array;
 }
