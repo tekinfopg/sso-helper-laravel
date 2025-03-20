@@ -738,4 +738,63 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
             throw $e;
         }
     }
+
+    /**
+     * Reset the password of a user by ID.
+     * 
+     * @param string $userId
+     * @param string $newPassword
+     * @return array
+     * An array containing the response data.
+     * 
+     */
+    public function resetUserPassword($userId, $newPassword): array
+    {
+        $maxRetries = 3;
+        $attempt = 0;
+
+        while ($attempt < $maxRetries) {
+            try {
+                $response = $this->getHttpClient()->put(
+                    "{$this->baseUrl}admin/realms/{$this->realm}/users/{$userId}/reset-password",
+                    [
+                        'headers' => [
+                            'Accept' => 'application/json',
+                            'Content-Type' => 'application/json',
+                        ],
+                        'json' => [
+                            "type" => "password",
+                            "temporary" => false,
+                            "value" => $newPassword,
+                        ],
+                    ]
+                );
+    
+                if ($response->getStatusCode() === 204) {
+                    return [
+                        'success' => true,
+                        'message' => 'Password has been successfully updated.',
+                    ];
+                }
+    
+                return [
+                    'success' => false,
+                    'message' => 'Failed to update password. Please try again later or contact support.',
+                ];
+            } catch (ClientException $e) {
+                if ($e->getResponse()->getStatusCode() === 404) {
+                    $attempt++;
+                    sleep(1);
+                    continue;
+                }
+    
+                throw $e;
+            }
+        }
+
+        return [
+            'success' => false,
+            'message' => 'User might not exist.',
+        ];
+    }
 }

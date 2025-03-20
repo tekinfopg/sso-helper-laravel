@@ -233,4 +233,15 @@ interface KeycloakProviderServiceInterface
      * 
      */
     public function getCurrentUserGroups(): array;
+
+    /**
+     * Reset the password of a user by ID.
+     * 
+     * @param string $userId
+     * @param string $newPassword
+     * @return array
+     * An array containing the response data.
+     * 
+     */
+    public function resetUserPassword($userId, $newPassword): array;
 }
