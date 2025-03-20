@@ -660,15 +660,18 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                 ]
             );
 
-            $body = json_decode($response->getBody(), true);
+            $response = json_decode($response->getBody(), true);
 
             $profile = [
-                'id' => $body['id'] ?? null,
-                'username' => $body['username'] ?? null,
-                'firstName' => $body['firstName'] ?? null,
-                'lastName' => $body['lastName'] ?? null,
-                'email' => $body['email'] ?? null,
-                'emailVerified' => $body['emailVerified'] ?? null,
+                'id' => $response['id'] ?? null,
+                'username' => $response['username'] ?? null,
+                'firstName' => $response['firstName'] ?? null,
+                'lastName' => $response['lastName'] ?? null,
+                'email' => $response['email'] ?? null,
+                'emailVerified' => $response['emailVerified'] ?? null,
+                'phoneNumber' => isset($response['attributes']) ?
+                    ($response['attributes']['phoneNumber'] ?? $response['attributes']['PhoneNumber'] ?? null)
+                    : null,
             ];
 
             return $profile;
@@ -690,7 +693,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
      * Retrieves the groups associated with the currently logged-in user.
      * 
      * @return array
-     * An array containing details of each group.
+     * An array containing names of each group.
      * 
      */
     public function getCurrentUserGroups(): array
@@ -709,7 +712,19 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                 ]
             );
 
-            return json_decode($response->getBody(), true);
+            $response = json_decode($response->getBody(), true);
+
+            $groups = [];
+
+            if(!is_array($response) || empty($response)) {
+                return $groups;
+            }
+
+            foreach ($response as $group) {
+                $groups[] = $group['name'];
+            }
+
+            return $groups;
         } catch (ClientException $e) {
             // Check if token expired (401 Unauthorized)
             if ($e->getResponse()->getStatusCode() === 401) {

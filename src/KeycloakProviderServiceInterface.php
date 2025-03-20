@@ -229,7 +229,7 @@ interface KeycloakProviderServiceInterface
      * Retrieves the groups associated with the currently logged-in user.
      * 
      * @return array
-     * An array containing details of each group.
+     * An array containing names each group.
      * 
      */
     public function getCurrentUserGroups(): array;
