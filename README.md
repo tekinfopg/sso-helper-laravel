@@ -55,16 +55,21 @@ This package provides integration between Laravel and Keycloak, enabling Single 
 | `getClientList()`                | Get Keycloak client list.                                  | *N/A*                           | `array`         |
 | `getUserList()`                  | Get Keycloak user list.                                    | *N/A*                           | `array`         |
 | `getUser($id)`                   | Get a single user.                                         | `string|int $id`                | `array`         |
-| `createUser($data)`             | Create a new Keycloak user.                                | `array $data`                   | `array`         |
-| `updateUser($id, $data)`        | Update an existing user.                                   | `string|int $id`, `array $data` | `array`         |
-| `deleteUser($id)`               | Delete a user.                                             | `string|int $id`                | `array`         |
+| `createUser($data)`              | Create a new Keycloak user.                                | `array $data`                   | `array`         |
+| `updateUser($id, $data)`         | Update an existing user.                                   | `string|int $id`, `array $data` | `array`         |
+| `deleteUser($id)`                | Delete a user.                                             | `string|int $id`                | `array`         |
 | `regenerateClientSecret($id)`    | Regenerate client’s secret.                                | `string|int $id`                | `array`         |
-| `getUserRoles($id)`             | Get roles assigned to a user.                              | `string $id`                    | `array`         |
-| `getRoles($clientUuid)`         | Get all roles by client or realm.                          | `string $clientUuid`            | `array`         |
+| `getUserRoles($id)`              | Get roles assigned to a user.                              | `string $id`                    | `array`         |
+| `getRoles($clientUuid)`          | Get all roles by client or realm.                          | `string $clientUuid`            | `array`         |
 | `getUsersWithRole($roleName)`    | Get all users with a given role.                           | `string $roleName`              | `array`         |
 | `getUsersWithRoles($clientUuid)` | Get all users and their roles for a client.               | `string $clientUuid`            | `array`         |
 | `createRole($clientUuid, $data)` | Create a role for the realm or client.                    | `string $clientUuid`, `array $data` | `array`      |
-| `Other method on progress` | -                    | - |   -      |
+| `getCurrentUserSessions()`       | Get the active sessions of the currently logged-in user.   | *N/A*                           | `array`         |
+| `getCurrentUserClients()`        | Get the clients associated with the currently logged-in user. | *N/A*                      | `array`         |
+| `getCurrentUserCredentials()`    | Get authentication credentials of the currently logged-in user. | *N/A*                      | `array`         |
+| `getCurrentUserProfile()`        | Get the profile details of the currently logged-in user.   | *N/A*                           | `array`         |
+| `getCurrentUserGroups()`         | Get the groups associated with the currently logged-in user. | *N/A*                      | `array`         |
+| **Other method on progress**     | -                                                         | -                                | -               |
 
 ## Example
 
