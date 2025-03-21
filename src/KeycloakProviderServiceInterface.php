@@ -254,4 +254,13 @@ interface KeycloakProviderServiceInterface
      * 
      */
     public function updateCurrentUserProfile($data): array;
+    
+    /**
+     * Delete all sessions except current session associated with the currently logged-in user.
+     * 
+     * @return array
+     * An array containing the response data.
+     * 
+     */
+    public function deleteAllCurrentUserSessions(): array;
 }
