@@ -1005,4 +1005,56 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
             'message' => 'User does not exist. Please verify your details or create a new account.',
         ];
     }
+
+    /**
+     * Send a reset password email to a user to reset their password.
+     * 
+     * @param string $userId
+     * @return array
+     * An array containing the response data.
+     * 
+     */
+    public function sendResetPasswordEmail($userId): array
+    {
+        $maxRetries = 3;
+        $attempt = 0;
+
+        while ($attempt < $maxRetries) {
+            try {
+                $response = $this->getHttpClient()->put(
+                    "{$this->baseUrl}admin/realms/{$this->realm}/users/{$userId}/reset-password-email",
+                    [
+                        'headers' => [
+                            'Accept' => 'application/json',
+                        ],
+                    ]
+                );
+    
+                if ($response->getStatusCode() === 204) {
+                    return [
+                        'success' => true,
+                        'message' => 'Reset password email has been sent successfully.',
+                    ];
+                }
+    
+                return [
+                    'success' => false,
+                    'message' => 'Failed to send reset password email. Please try again later.',
+                ];
+            } catch (ClientException $e) {
+                if ($e->getResponse()->getStatusCode() === 404) {
+                    $attempt++;
+                    sleep(1);
+                    continue;
+                }
+    
+                throw $e;
+            }
+        }
+
+        return [
+            'success' => false,
+            'message' => 'User does not exist. Please verify your details or create a new account.',
+        ];
+    }
 }

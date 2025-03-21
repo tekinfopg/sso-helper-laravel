@@ -283,4 +283,14 @@ interface KeycloakProviderServiceInterface
      * 
      */
     public function sendVerificationEmail($userId): array;
+
+    /**
+     * Send a reset password email to a user to reset their password.
+     * 
+     * @param string $userId
+     * @return array
+     * An array containing the response data.
+     * 
+     */
+    public function sendResetPasswordEmail($userId): array;
 }
