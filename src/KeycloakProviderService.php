@@ -794,7 +794,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
 
         return [
             'success' => false,
-            'message' => 'User might not exist.',
+            'message' => 'User does not exist. Please verify your details or create a new account.',
         ];
     }
     
