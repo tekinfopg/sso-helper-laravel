@@ -797,4 +797,61 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
             'message' => 'User might not exist.',
         ];
     }
+    
+    /**
+     * Update the profile of the currently logged-in user.
+     * 
+     * @param array $data
+     * @return array
+     * An array containing the response data.
+     * 
+     */
+    public function updateCurrentUserProfile($data): array
+    {
+        // Get token from session or user model
+        $token = Session::get('access_token') ?? (Auth::user() ? Auth::user()->{$this->tokenField} : null);
+        
+        try {
+            $response = $this->getHttpClient()->post(
+                "{$this->baseUrl}realms/{$this->realm}/account",
+                [
+                    'headers' => [
+                        'Accept' => 'application/json',
+                        'Content-Type' => 'application/json',
+                        'Authorization' => "Bearer {$token}",
+                    ],
+                    'json' => $data
+                ]
+            );
+
+            if ($response->getStatusCode() === 204) {
+                return [
+                    'success' => true,
+                    'message' => 'User profile has been successfully updated.',
+                ];
+            }
+
+            return [
+                'success' => false,
+                'message' => 'Failed to update user profile. Please try again later or contact support.',
+            ];
+        } catch (ClientException $e) {
+            // Check if token expired (401 Unauthorized)
+            if ($e->getResponse()->getStatusCode() === 401) {
+                // Try to refresh the token
+                $newToken = $this->refreshToken(Session::get('refresh_token'));
+                if ($newToken) {
+                    // Retry with the new token
+                    return $this->updateCurrentUserProfile($data);
+                }
+            } else if ($e->getResponse()->getStatusCode() === 400) {
+                return [
+                    'success' => false,
+                    'message' => 'A required user attribute is missing. Please check your input and try again.',
+                ];
+            }
+
+            throw $e;
+        }
+    }
 }

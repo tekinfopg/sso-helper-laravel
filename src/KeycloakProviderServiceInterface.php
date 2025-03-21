@@ -244,4 +244,14 @@ interface KeycloakProviderServiceInterface
      * 
      */
     public function resetUserPassword($userId, $newPassword): array;
+    
+    /**
+     * Update the profile of the currently logged-in user.
+     * 
+     * @param array $data
+     * @return array
+     * An array containing the response data.
+     * 
+     */
+    public function updateCurrentUserProfile($data): array;
 }
