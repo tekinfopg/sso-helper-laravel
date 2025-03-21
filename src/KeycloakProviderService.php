@@ -903,4 +903,54 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
             throw $e;
         }
     }
+
+    /**
+     * Delete a session associated with the currently logged-in user by ID.
+     * 
+     * @param string $sessionId
+     * @return array
+     * An array containing the response data.
+     * 
+     */
+    public function deleteCurrentUserSessionById($sessionId): array
+    {
+        // Get token from session or user model
+        $token = Session::get('access_token') ?? (Auth::user() ? Auth::user()->{$this->tokenField} : null);
+        
+        try {
+            $response = $this->getHttpClient()->delete(
+                "{$this->baseUrl}realms/{$this->realm}/account/sessions/{$sessionId}",
+                [
+                    'headers' => [
+                        'Accept' => 'application/json',
+                        'Authorization' => "Bearer {$token}",
+                    ],
+                ]
+            );
+
+            if ($response->getStatusCode() === 204) {
+                return [
+                    'success' => true,
+                    'message' => 'Session deleted successfully.',
+                ];
+            }
+
+            return [
+                'success' => false,
+                'message' => 'Unable to delete user session. Please try again later or contact support.',
+            ];
+        } catch (ClientException $e) {
+            // Check if token expired (401 Unauthorized)
+            if ($e->getResponse()->getStatusCode() === 401) {
+                // Try to refresh the token
+                $newToken = $this->refreshToken(Session::get('refresh_token'));
+                if ($newToken) {
+                    // Retry with the new token
+                    return $this->deleteCurrentUserSessionById($sessionId);
+                }
+            }
+
+            throw $e;
+        }
+    }
 }

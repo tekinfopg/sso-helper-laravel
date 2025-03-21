@@ -263,4 +263,14 @@ interface KeycloakProviderServiceInterface
      * 
      */
     public function deleteAllCurrentUserSessions(): array;
+
+    /**
+     * Delete a session associated with the currently logged-in user by ID.
+     * 
+     * @param string $sessionId
+     * @return array
+     * An array containing the response data.
+     * 
+     */
+    public function deleteCurrentUserSessionById($sessionId): array;
 }
