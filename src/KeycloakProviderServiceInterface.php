@@ -273,4 +273,14 @@ interface KeycloakProviderServiceInterface
      * 
      */
     public function deleteCurrentUserSessionById($sessionId): array;
+
+    /**
+     * Send a verification email to a user to verify their email address.
+     * 
+     * @param string $userId
+     * @return array
+     * An array containing the response data.
+     * 
+     */
+    public function sendVerificationEmail($userId): array;
 }
