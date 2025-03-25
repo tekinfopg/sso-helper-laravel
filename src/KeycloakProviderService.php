@@ -1088,7 +1088,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
 
             $response = json_decode($response->getBody(), true);
 
-            $isExpired = $response['active'] ?? false;
+            $isExpired = $response['active'] ?? true;
 
             return $isExpired;
         } catch (ClientException $e) {
