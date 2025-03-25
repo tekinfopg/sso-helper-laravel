@@ -293,4 +293,12 @@ interface KeycloakProviderServiceInterface
      * 
      */
     public function sendResetPasswordEmail($userId): array;
+
+    /**
+     * Check if the access token is expired
+     * 
+     * @return bool
+     * 
+     */
+    public function isTokenExpired(): bool;
 }

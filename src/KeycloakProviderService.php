@@ -1057,4 +1057,42 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
             'message' => 'User does not exist. Please verify your details or create a new account.',
         ];
     }
+
+    /**
+     * Check if the access token is expired
+     * 
+     * @return bool
+     * 
+     */
+    public function isTokenExpired(): bool
+    {
+        $clientId = Config::get('keycloak.client_id');
+        $clientSecret = Config::get('keycloak.client_secret');
+        $token = Session::get('access_token') ?? (Auth::user() ? Auth::user()->{$this->tokenField} : null);
+
+        try {
+            $response = $this->getHttpClient()->post(
+                "{$this->baseUrl}realms/{$this->realm}/protocol/openid-connect/token/introspect",
+                [
+                    'headers' => [
+                        'Accept' => 'application/json',
+                        'Content' => 'application/x-www-form-urlencoded',
+                    ],
+                    'form_params' => [
+                        'client_id' => $clientId,
+                        'client_secret' => $clientSecret,
+                        'token' => $token,
+                    ],
+                ]
+            );
+
+            $response = json_decode($response->getBody(), true);
+
+            $isExpired = $response['active'] ?? false;
+
+            return $isExpired;
+        } catch (ClientException $e) {
+            throw $e;
+        }
+    }
 }
