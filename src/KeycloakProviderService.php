@@ -41,6 +41,9 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
      */
     protected $refreshTokenField;
 
+    protected $tokenSessionKey;
+    protected $refreshTokenSessionKey;
+
     /**
      * Create a new provider instance.
      *
@@ -59,7 +62,10 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
         $this->realm = Config::get('keycloak.realms');
         $this->tokenField = Config::get('keycloak.token_field', 'keycloak_token');
         $this->refreshTokenField = Config::get('keycloak.refresh_token_field', 'keycloak_refresh_token');
+        $this->tokenSessionKey = Config::get('keycloak.session_access_token_field', 'access_token');
+        $this->refreshTokenSessionKey = Config::get('keycloak.session_refresh_token_field', 'refresh_token');
     }
+
 
     /**
      * Set the base URL for Keycloak.
@@ -152,7 +158,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
             // Check if token expired (401 Unauthorized)
             if ($e->getResponse()->getStatusCode() === 401) {
                 // Try to refresh the token
-                $newToken = $this->refreshToken(Session::get('refresh_token'));
+                $newToken = $this->refreshToken(Session::get($this->refreshTokenSessionKey));
                 if ($newToken) {
                     // Retry with the new token
                     return $this->getUserByToken($newToken);
@@ -196,8 +202,8 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
             $data = json_decode($response->getBody(), true);
             // Store the new tokens
             Session::put([
-                'access_token' => $data['access_token'],
-                'refresh_token' => $data['refresh_token'] ?? $refreshToken,
+                $this->tokenSessionKey => $data['access_token'],
+                $this->refreshTokenSessionKey => $data['refresh_token'] ?? $refreshToken,
                 'expires_in' => $data['expires_in'],
                 'token_expiration' => Carbon::now()->addSeconds($data['expires_in'])->timestamp,
             ]);
@@ -230,10 +236,10 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
     public function request($method, $url, $data = []): array
     {
         // Get token from session or user model
-        $token = Session::get('access_token') ?? (Auth::user() ? Auth::user()->{$this->tokenField} : null);
+        $token = Session::get($this->tokenSessionKey) ?? (Auth::user() ? Auth::user()->{$this->tokenField} : null);
 
         // Try to refresh if no token is found
-        if (!$token && !($token = $this->refreshToken(Session::get('refresh_token')))) {
+        if (!$token && !($token = $this->refreshToken(Session::get($this->refreshTokenSessionKey)))) {
             throw new \Exception('Access token not found');
         }
 
@@ -258,7 +264,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
             // Check if token expired (401 Unauthorized)
             if ($e->getResponse()->getStatusCode() === 401) {
                 // Try to refresh the token
-                $newToken = $this->refreshToken(Session::get('refresh_token'));
+                $newToken = $this->refreshToken(Session::get($this->refreshTokenSessionKey));
                 if ($newToken) {
                     // Retry with the new token
                     return $this->request($method, $url, $data);
@@ -534,7 +540,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
     public function getCurrentUserSessions(): array
     {
         try {// Get token from session or user model
-            $token = Session::get('access_token') ?? (Auth::user() ? Auth::user()->{$this->tokenField} : null);
+            $token = Session::get($this->tokenSessionKey) ?? (Auth::user() ? Auth::user()->{$this->tokenField} : null);
             
             $response = $this->getHttpClient()->get(
                 "{$this->baseUrl}realms/{$this->realm}/account/sessions/devices",
@@ -551,7 +557,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
             // Check if token expired (401 Unauthorized)
             if ($e->getResponse()->getStatusCode() === 401) {
                 // Try to refresh the token
-                $newToken = $this->refreshToken(Session::get('refresh_token'));
+                $newToken = $this->refreshToken(Session::get($this->refreshTokenSessionKey));
                 if ($newToken) {
                     // Retry with the new token
                     return $this->getCurrentUserSessions();
@@ -571,7 +577,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
     public function getCurrentUserClients(): array
     {
         // Get token from session or user model
-        $token = Session::get('access_token') ?? (Auth::user() ? Auth::user()->{$this->tokenField} : null);
+        $token = Session::get($this->tokenSessionKey) ?? (Auth::user() ? Auth::user()->{$this->tokenField} : null);
         
         try {
             $response = $this->getHttpClient()->get(
@@ -589,7 +595,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
             // Check if token expired (401 Unauthorized)
             if ($e->getResponse()->getStatusCode() === 401) {
                 // Try to refresh the token
-                $newToken = $this->refreshToken(Session::get('refresh_token'));
+                $newToken = $this->refreshToken(Session::get($this->refreshTokenSessionKey));
                 if ($newToken) {
                     // Retry with the new token
                     return $this->getCurrentUserClients();
@@ -609,7 +615,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
     public function getCurrentUserCredentials(): array
     {
         // Get token from session or user model
-        $token = Session::get('access_token') ?? (Auth::user() ? Auth::user()->{$this->tokenField} : null);
+        $token = Session::get($this->tokenSessionKey) ?? (Auth::user() ? Auth::user()->{$this->tokenField} : null);
         
         try {
             $response = $this->getHttpClient()->get(
@@ -627,7 +633,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
             // Check if token expired (401 Unauthorized)
             if ($e->getResponse()->getStatusCode() === 401) {
                 // Try to refresh the token
-                $newToken = $this->refreshToken(Session::get('refresh_token'));
+                $newToken = $this->refreshToken(Session::get($this->refreshTokenSessionKey));
                 if ($newToken) {
                     // Retry with the new token
                     return $this->getCurrentUserCredentials();
@@ -647,7 +653,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
     public function getCurrentUserProfile(): array
     {
         // Get token from session or user model
-        $token = Session::get('access_token') ?? (Auth::user() ? Auth::user()->{$this->tokenField} : null);
+        $token = Session::get($this->tokenSessionKey) ?? (Auth::user() ? Auth::user()->{$this->tokenField} : null);
         
         try {
             $response = $this->getHttpClient()->get(
@@ -679,7 +685,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
             // Check if token expired (401 Unauthorized)
             if ($e->getResponse()->getStatusCode() === 401) {
                 // Try to refresh the token
-                $newToken = $this->refreshToken(Session::get('refresh_token'));
+                $newToken = $this->refreshToken(Session::get($this->refreshTokenSessionKey));
                 if ($newToken) {
                     // Retry with the new token
                     return $this->getCurrentUserProfile();
@@ -699,7 +705,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
     public function getCurrentUserGroups(): array
     {
         // Get token from session or user model
-        $token = Session::get('access_token') ?? (Auth::user() ? Auth::user()->{$this->tokenField} : null);
+        $token = Session::get($this->tokenSessionKey) ?? (Auth::user() ? Auth::user()->{$this->tokenField} : null);
         
         try {
             $response = $this->getHttpClient()->get(
@@ -729,7 +735,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
             // Check if token expired (401 Unauthorized)
             if ($e->getResponse()->getStatusCode() === 401) {
                 // Try to refresh the token
-                $newToken = $this->refreshToken(Session::get('refresh_token'));
+                $newToken = $this->refreshToken(Session::get($this->refreshTokenSessionKey));
                 if ($newToken) {
                     // Retry with the new token
                     return $this->getCurrentUserGroups();

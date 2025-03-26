@@ -7,4 +7,6 @@ return [
     'realms' => env('KEYCLOAK_REALM'),              // Specify your keycloak realm
     'token_field' => 'keycloak_token',                   // Specify the field name for storing the Keycloak token
     'refresh_token_field' => 'keycloak_refresh_token',   // Specify the field name for storing the Keycloak refresh token
+    'session_access_token_field' => 'access_token',           // Specify the field name for storing the Keycloak session token
+    'session_refresh_token_field' => 'refresh_token',           // Specify the field name for storing the Keycloak session token
 ];
