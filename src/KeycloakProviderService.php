@@ -744,4 +744,361 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
             throw $e;
         }
     }
+
+    /**
+     * Reset the password of a user by ID.
+     * 
+     * @param string $userId
+     * @param string $newPassword
+     * @return array
+     * An array containing the response data.
+     * 
+     */
+    public function resetUserPassword($userId, $newPassword): array
+    {
+        $maxRetries = 3;
+        $attempt = 0;
+
+        while ($attempt < $maxRetries) {
+            try {
+                $response = $this->getHttpClient()->put(
+                    "{$this->baseUrl}admin/realms/{$this->realm}/users/{$userId}/reset-password",
+                    [
+                        'headers' => [
+                            'Accept' => 'application/json',
+                            'Content-Type' => 'application/json',
+                        ],
+                        'json' => [
+                            "type" => "password",
+                            "temporary" => false,
+                            "value" => $newPassword,
+                        ],
+                    ]
+                );
+    
+                if ($response->getStatusCode() === 204) {
+                    return [
+                        'success' => true,
+                        'message' => 'Password has been successfully updated.',
+                    ];
+                }
+    
+                return [
+                    'success' => false,
+                    'message' => 'Failed to update password. Please try again later or contact support.',
+                ];
+            } catch (ClientException $e) {
+                if ($e->getResponse()->getStatusCode() === 404) {
+                    $attempt++;
+                    sleep(1);
+                    continue;
+                }
+    
+                throw $e;
+            }
+        }
+
+        return [
+            'success' => false,
+            'message' => 'User does not exist. Please verify your details or create a new account.',
+        ];
+    }
+    
+    /**
+     * Update the profile of the currently logged-in user.
+     * 
+     * @param array $data
+     * @return array
+     * An array containing the response data.
+     * 
+     */
+    public function updateCurrentUserProfile($data): array
+    {
+        // Get token from session or user model
+        $token = Session::get('access_token') ?? (Auth::user() ? Auth::user()->{$this->tokenField} : null);
+        
+        try {
+            $response = $this->getHttpClient()->post(
+                "{$this->baseUrl}realms/{$this->realm}/account",
+                [
+                    'headers' => [
+                        'Accept' => 'application/json',
+                        'Content-Type' => 'application/json',
+                        'Authorization' => "Bearer {$token}",
+                    ],
+                    'json' => $data
+                ]
+            );
+
+            if ($response->getStatusCode() === 204) {
+                return [
+                    'success' => true,
+                    'message' => 'User profile has been successfully updated.',
+                ];
+            }
+
+            return [
+                'success' => false,
+                'message' => 'Failed to update user profile. Please try again later or contact support.',
+            ];
+        } catch (ClientException $e) {
+            // Check if token expired (401 Unauthorized)
+            if ($e->getResponse()->getStatusCode() === 401) {
+                // Try to refresh the token
+                $newToken = $this->refreshToken(Session::get('refresh_token'));
+                if ($newToken) {
+                    // Retry with the new token
+                    return $this->updateCurrentUserProfile($data);
+                }
+            } else if ($e->getResponse()->getStatusCode() === 400) {
+                return [
+                    'success' => false,
+                    'message' => 'A required user attribute is missing. Please check your input and try again.',
+                ];
+            }
+
+            throw $e;
+        }
+    }
+
+    /**
+     * Delete all sessions except current session associated with the currently logged-in user.
+     * 
+     * @return array
+     * An array containing the response data.
+     * 
+     */
+    public function deleteAllCurrentUserSessions(): array
+    {
+        // Get token from session or user model
+        $token = Session::get('access_token') ?? (Auth::user() ? Auth::user()->{$this->tokenField} : null);
+        
+        try {
+            $response = $this->getHttpClient()->delete(
+                "{$this->baseUrl}realms/{$this->realm}/account/sessions",
+                [
+                    'headers' => [
+                        'Accept' => 'application/json',
+                        'Authorization' => "Bearer {$token}",
+                    ],
+                ]
+            );
+
+            if ($response->getStatusCode() === 204) {
+                return [
+                    'success' => true,
+                    'message' => 'Sessions deleted successfully.',
+                ];
+            }
+
+            return [
+                'success' => false,
+                'message' => 'Unable to delete user sessions. Please try again later or contact support.',
+            ];
+        } catch (ClientException $e) {
+            // Check if token expired (401 Unauthorized)
+            if ($e->getResponse()->getStatusCode() === 401) {
+                // Try to refresh the token
+                $newToken = $this->refreshToken(Session::get('refresh_token'));
+                if ($newToken) {
+                    // Retry with the new token
+                    return $this->deleteAllCurrentUserSessions();
+                }
+            }
+
+            throw $e;
+        }
+    }
+
+    /**
+     * Delete a session associated with the currently logged-in user by ID.
+     * 
+     * @param string $sessionId
+     * @return array
+     * An array containing the response data.
+     * 
+     */
+    public function deleteCurrentUserSessionById($sessionId): array
+    {
+        // Get token from session or user model
+        $token = Session::get('access_token') ?? (Auth::user() ? Auth::user()->{$this->tokenField} : null);
+        
+        try {
+            $response = $this->getHttpClient()->delete(
+                "{$this->baseUrl}realms/{$this->realm}/account/sessions/{$sessionId}",
+                [
+                    'headers' => [
+                        'Accept' => 'application/json',
+                        'Authorization' => "Bearer {$token}",
+                    ],
+                ]
+            );
+
+            if ($response->getStatusCode() === 204) {
+                return [
+                    'success' => true,
+                    'message' => 'Session deleted successfully.',
+                ];
+            }
+
+            return [
+                'success' => false,
+                'message' => 'Unable to delete user session. Please try again later or contact support.',
+            ];
+        } catch (ClientException $e) {
+            // Check if token expired (401 Unauthorized)
+            if ($e->getResponse()->getStatusCode() === 401) {
+                // Try to refresh the token
+                $newToken = $this->refreshToken(Session::get('refresh_token'));
+                if ($newToken) {
+                    // Retry with the new token
+                    return $this->deleteCurrentUserSessionById($sessionId);
+                }
+            }
+
+            throw $e;
+        }
+    }
+
+    /**
+     * Send a verification email to a user to verify their email address.
+     * 
+     * @param string $userId
+     * @return array
+     * An array containing the response data.
+     * 
+     */
+    public function sendVerificationEmail($userId): array
+    {
+        $maxRetries = 3;
+        $attempt = 0;
+
+        while ($attempt < $maxRetries) {
+            try {
+                $response = $this->getHttpClient()->put(
+                    "{$this->baseUrl}admin/realms/{$this->realm}/users/{$userId}/send-verify-email",
+                    [
+                        'headers' => [
+                            'Accept' => 'application/json',
+                        ],
+                    ]
+                );
+    
+                if ($response->getStatusCode() === 204) {
+                    return [
+                        'success' => true,
+                        'message' => 'Verification email has been sent successfully.',
+                    ];
+                }
+    
+                return [
+                    'success' => false,
+                    'message' => 'Failed to send verification email. Please try again later.',
+                ];
+            } catch (ClientException $e) {
+                if ($e->getResponse()->getStatusCode() === 404) {
+                    $attempt++;
+                    sleep(1);
+                    continue;
+                }
+    
+                throw $e;
+            }
+        }
+
+        return [
+            'success' => false,
+            'message' => 'User does not exist. Please verify your details or create a new account.',
+        ];
+    }
+
+    /**
+     * Send a reset password email to a user to reset their password.
+     * 
+     * @param string $userId
+     * @return array
+     * An array containing the response data.
+     * 
+     */
+    public function sendResetPasswordEmail($userId): array
+    {
+        $maxRetries = 3;
+        $attempt = 0;
+
+        while ($attempt < $maxRetries) {
+            try {
+                $response = $this->getHttpClient()->put(
+                    "{$this->baseUrl}admin/realms/{$this->realm}/users/{$userId}/reset-password-email",
+                    [
+                        'headers' => [
+                            'Accept' => 'application/json',
+                        ],
+                    ]
+                );
+    
+                if ($response->getStatusCode() === 204) {
+                    return [
+                        'success' => true,
+                        'message' => 'Reset password email has been sent successfully.',
+                    ];
+                }
+    
+                return [
+                    'success' => false,
+                    'message' => 'Failed to send reset password email. Please try again later.',
+                ];
+            } catch (ClientException $e) {
+                if ($e->getResponse()->getStatusCode() === 404) {
+                    $attempt++;
+                    sleep(1);
+                    continue;
+                }
+    
+                throw $e;
+            }
+        }
+
+        return [
+            'success' => false,
+            'message' => 'User does not exist. Please verify your details or create a new account.',
+        ];
+    }
+
+    /**
+     * Check if the access token is expired
+     * 
+     * @return bool
+     * 
+     */
+    public function isTokenExpired(): bool
+    {
+        $clientId = Config::get('keycloak.client_id');
+        $clientSecret = Config::get('keycloak.client_secret');
+        $token = Session::get('access_token') ?? (Auth::user() ? Auth::user()->{$this->tokenField} : null);
+
+        try {
+            $response = $this->getHttpClient()->post(
+                "{$this->baseUrl}realms/{$this->realm}/protocol/openid-connect/token/introspect",
+                [
+                    'headers' => [
+                        'Accept' => 'application/json',
+                        'Content' => 'application/x-www-form-urlencoded',
+                    ],
+                    'form_params' => [
+                        'client_id' => $clientId,
+                        'client_secret' => $clientSecret,
+                        'token' => $token,
+                    ],
+                ]
+            );
+
+            $response = json_decode($response->getBody(), true);
+
+            $isExpired = $response['active'] ?? true;
+
+            return $isExpired;
+        } catch (ClientException $e) {
+            throw $e;
+        }
+    }
 }

@@ -233,4 +233,72 @@ interface KeycloakProviderServiceInterface
      * 
      */
     public function getCurrentUserGroups(): array;
+
+    /**
+     * Reset the password of a user by ID.
+     * 
+     * @param string $userId
+     * @param string $newPassword
+     * @return array
+     * An array containing the response data.
+     * 
+     */
+    public function resetUserPassword($userId, $newPassword): array;
+    
+    /**
+     * Update the profile of the currently logged-in user.
+     * 
+     * @param array $data
+     * @return array
+     * An array containing the response data.
+     * 
+     */
+    public function updateCurrentUserProfile($data): array;
+    
+    /**
+     * Delete all sessions except current session associated with the currently logged-in user.
+     * 
+     * @return array
+     * An array containing the response data.
+     * 
+     */
+    public function deleteAllCurrentUserSessions(): array;
+
+    /**
+     * Delete a session associated with the currently logged-in user by ID.
+     * 
+     * @param string $sessionId
+     * @return array
+     * An array containing the response data.
+     * 
+     */
+    public function deleteCurrentUserSessionById($sessionId): array;
+
+    /**
+     * Send a verification email to a user to verify their email address.
+     * 
+     * @param string $userId
+     * @return array
+     * An array containing the response data.
+     * 
+     */
+    public function sendVerificationEmail($userId): array;
+
+    /**
+     * Send a reset password email to a user to reset their password.
+     * 
+     * @param string $userId
+     * @return array
+     * An array containing the response data.
+     * 
+     */
+    public function sendResetPasswordEmail($userId): array;
+
+    /**
+     * Check if the access token is expired
+     * 
+     * @return bool
+     * 
+     */
+    public function isTokenExpired(): bool;
 }
