@@ -1,5 +1,5 @@
 {
-  "name": "edoaurahman/keycloak-sso",
+  "name": "tekinfopg/sso-helper-laravel",
   "description": "Integrate Laravel with Keycloak",
   "type": "library",
   "license": "MIT",
