@@ -49,7 +49,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
      *
      * @var string
      */
-    private $clientUuid;
+    protected $clientUuid;
 
 
     /**
@@ -57,7 +57,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
      *
      * @var string
      */
-    private $clientSecret;
+    protected $clientSecret;
 
     /**
      * Create a new provider instance.
