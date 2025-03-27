@@ -45,6 +45,21 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
     protected $refreshTokenSessionKey;
 
     /**
+     * The unique identifier (UUID) of the Keycloak client.
+     *
+     * @var string
+     */
+    private $clientUuid;
+
+
+    /**
+     * Keycloak client secret used for authentication.
+     *
+     * @var string
+     */
+    private $clientSecret;
+
+    /**
      * Create a new provider instance.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -64,6 +79,8 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
         $this->refreshTokenField = Config::get('keycloak.refresh_token_field', 'keycloak_refresh_token');
         $this->tokenSessionKey = Config::get('keycloak.session_access_token_field', 'access_token');
         $this->refreshTokenSessionKey = Config::get('keycloak.session_refresh_token_field', 'refresh_token');
+        $this->clientUuid = Config::get('keycloak.client_uuid');
+        $this->clientSecret = Config::get('keycloak.client_secret');
     }
 
 
@@ -372,44 +389,43 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
     /**
      * regenerate client secret
      * 
-     * @param string $id
+     * @param string $clientUuid
      * @return array
      * @throws \Exception
      * 
      */
-    public function regenerateClientSecret($id): array
+    public function regenerateClientSecret($clientUuid): array
     {
-        return $this->request('POST', "{$this->baseUrl}admin/realms/{$this->realm}/clients/{$id}/client-secret");
+        return $this->request('POST', "{$this->baseUrl}admin/realms/{$this->realm}/clients/{$clientUuid}/client-secret");
     }
 
     /**
      * Get Roles of a user
      * 
-     * @param string $id
+     * @param string $userUuid
      * @return array
      * @throws \Exception
      * 
      */
-    public function getUserRoles($id): array
+    public function getUserRoles($userUuid): array
     {
-        return $this->request('GET', "{$this->baseUrl}admin/realms/{$this->realm}/users/{$id}/role-mappings");
+        return $this->request('GET', "{$this->baseUrl}admin/realms/{$this->realm}/users/{$userUuid}/role-mappings");
     }
 
     /**
-     * Get all roles for the realm or client
+     * Get all roles for the client
      * 
-     * @param string $clientUuid
      * @return array
      * @throws \Exception
      */
 
-    public function getRoles($clientUuid): array
+    public function getRoles(): array
     {
-        return $this->request('GET', "{$this->baseUrl}admin/realms/{$this->realm}/clients/{$clientUuid}/roles");
+        return $this->request('GET', "{$this->baseUrl}admin/realms/{$this->realm}/clients/{$this->clientUuid}/roles");
     }
 
     /**
-     * Get all users with a specific role
+     * Get all users with a specific realm role
      * 
      * @param string $roleName
      * @return array
@@ -423,14 +439,13 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
     /**
      * Get all users with their roles
      * 
-     * @param string $clientUuid
      * @return array
      * 
      */
-    public function getUsersWithRoles($clientUuid): array
+    public function getUsersWithRoles(): array
     {
         $users = $this->getUserList();
-        $roles = $this->getRoles($clientUuid);
+        $roles = $this->getRoles();
         $roleMappings = [];
         foreach ($roles as $role) {
             $roleMappings[$role['id']] = $role['name'];
@@ -467,14 +482,13 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
     /**
      * Create a new role for the realm or client
      * 
-     * @param string $clientUuid
      * @param array $data
      * @return array
      * 
      */
-    public function createRole($clientUuid, $data): array
+    public function createRole($data): array
     {
-        return $this->request('POST', "{$this->baseUrl}admin/realms/{$this->realm}/clients/{$clientUuid}/roles", $data);
+        return $this->request('POST', "{$this->baseUrl}admin/realms/{$this->realm}/clients/{$this->clientUuid}/roles", $data);
     }
 
     /**
@@ -496,15 +510,14 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
     }
 
     /**
-     * Get user sessions for client Returns a list of user sessions associated with this client
+     * Retrieves a list of user sessions associated with the Keycloak client.
      * 
-     * @param string $clientUuid
      * @return array
      * 
      */
-    public function getUserSessions($clientUuid): array
+    public function getClientSessions(): array
     {
-        return $this->request('GET', "{$this->baseUrl}admin/realms/{$this->realm}/clients/{$clientUuid}/user-sessions");
+        return $this->request('GET', "{$this->baseUrl}admin/realms/{$this->realm}/clients/{$this->clientUuid}/user-sessions");
     }
 
     /**
@@ -522,12 +535,12 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
     /**
      * Get sessions associated with the user
      * 
-     * @param string $userId
+     * @param string $userUuid
      * @return array
      */
-    public function getUserSessionsByUserId($userId): array
+    public function getUserSessionsByUserId($userUuid): array
     {
-        return $this->request('GET', "{$this->baseUrl}admin/realms/{$this->realm}/users/{$userId}/sessions");
+        return $this->request('GET', "{$this->baseUrl}admin/realms/{$this->realm}/users/{$userUuid}/sessions");
     }
     
     /**
@@ -748,13 +761,13 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
     /**
      * Reset the password of a user by ID.
      * 
-     * @param string $userId
+     * @param string $userUuid
      * @param string $newPassword
      * @return array
      * An array containing the response data.
      * 
      */
-    public function resetUserPassword($userId, $newPassword): array
+    public function resetUserPassword($userUuid, $newPassword): array
     {
         $maxRetries = 3;
         $attempt = 0;
@@ -762,7 +775,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
         while ($attempt < $maxRetries) {
             try {
                 $response = $this->getHttpClient()->put(
-                    "{$this->baseUrl}admin/realms/{$this->realm}/users/{$userId}/reset-password",
+                    "{$this->baseUrl}admin/realms/{$this->realm}/users/{$userUuid}/reset-password",
                     [
                         'headers' => [
                             'Accept' => 'application/json',
@@ -913,19 +926,19 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
     /**
      * Delete a session associated with the currently logged-in user by ID.
      * 
-     * @param string $sessionId
+     * @param string $sessionUuid
      * @return array
      * An array containing the response data.
      * 
      */
-    public function deleteCurrentUserSessionById($sessionId): array
+    public function deleteCurrentUserSessionById($sessionUuid): array
     {
         // Get token from session or user model
         $token = Session::get('access_token') ?? (Auth::user() ? Auth::user()->{$this->tokenField} : null);
         
         try {
             $response = $this->getHttpClient()->delete(
-                "{$this->baseUrl}realms/{$this->realm}/account/sessions/{$sessionId}",
+                "{$this->baseUrl}realms/{$this->realm}/account/sessions/{$sessionUuid}",
                 [
                     'headers' => [
                         'Accept' => 'application/json',
@@ -952,7 +965,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                 $newToken = $this->refreshToken(Session::get('refresh_token'));
                 if ($newToken) {
                     // Retry with the new token
-                    return $this->deleteCurrentUserSessionById($sessionId);
+                    return $this->deleteCurrentUserSessionById($sessionUuid);
                 }
             }
 
@@ -963,12 +976,12 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
     /**
      * Send a verification email to a user to verify their email address.
      * 
-     * @param string $userId
+     * @param string $userUuid
      * @return array
      * An array containing the response data.
      * 
      */
-    public function sendVerificationEmail($userId): array
+    public function sendVerificationEmail($userUuid): array
     {
         $maxRetries = 3;
         $attempt = 0;
@@ -976,7 +989,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
         while ($attempt < $maxRetries) {
             try {
                 $response = $this->getHttpClient()->put(
-                    "{$this->baseUrl}admin/realms/{$this->realm}/users/{$userId}/send-verify-email",
+                    "{$this->baseUrl}admin/realms/{$this->realm}/users/{$userUuid}/send-verify-email",
                     [
                         'headers' => [
                             'Accept' => 'application/json',
@@ -1015,12 +1028,12 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
     /**
      * Send a reset password email to a user to reset their password.
      * 
-     * @param string $userId
+     * @param string $userUuid
      * @return array
      * An array containing the response data.
      * 
      */
-    public function sendResetPasswordEmail($userId): array
+    public function sendResetPasswordEmail($userUuid): array
     {
         $maxRetries = 3;
         $attempt = 0;
@@ -1028,7 +1041,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
         while ($attempt < $maxRetries) {
             try {
                 $response = $this->getHttpClient()->put(
-                    "{$this->baseUrl}admin/realms/{$this->realm}/users/{$userId}/reset-password-email",
+                    "{$this->baseUrl}admin/realms/{$this->realm}/users/{$userUuid}/reset-password-email",
                     [
                         'headers' => [
                             'Accept' => 'application/json',
@@ -1072,8 +1085,6 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
      */
     public function isTokenExpired(): bool
     {
-        $clientId = Config::get('keycloak.client_id');
-        $clientSecret = Config::get('keycloak.client_secret');
         $token = Session::get('access_token') ?? (Auth::user() ? Auth::user()->{$this->tokenField} : null);
 
         try {
@@ -1085,8 +1096,8 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                         'Content' => 'application/x-www-form-urlencoded',
                     ],
                     'form_params' => [
-                        'client_id' => $clientId,
-                        'client_secret' => $clientSecret,
+                        'client_id' => $this->clientUuid,
+                        'client_secret' => $this->clientSecret,
                         'token' => $token,
                     ],
                 ]
@@ -1113,13 +1124,11 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
      */
     public function getUserClientRoles($userUuid) : array
     {
-        $clientUuid = Config::get('keycloak.client_id');
-
         $clientRoles = [];
 
         try {
             $response = $this->getHttpClient()->get(
-                "{$this->baseUrl}admin/realms/{$this->realm}/users/{$userUuid}/role-mappings/clients/{$clientUuid}",
+                "{$this->baseUrl}admin/realms/{$this->realm}/users/{$userUuid}/role-mappings/clients/{$this->clientUuid}",
                 [
                     'headers' => [
                         'Accept' => 'application/json',
@@ -1155,13 +1164,11 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
      */
     public function getUsersByClientRole($roleName) : array
     {
-        $clientUuid = Config::get('keycloak.client_id');
-
         $users = [];
 
         try {
             $response = $this->getHttpClient()->get(
-                "{$this->baseUrl}admin/realms/{$this->realm}}/clients/{$clientUuid}/roles/{$roleName}/users",
+                "{$this->baseUrl}admin/realms/{$this->realm}}/clients/{$this->clientUuid}/roles/{$roleName}/users",
                 [
                     'headers' => [
                         'Accept' => 'application/json',

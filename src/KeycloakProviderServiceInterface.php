@@ -104,30 +104,29 @@ interface KeycloakProviderServiceInterface
     /**
      * Regenerates the client secret for a specified client.
      *
-     * @param string|int $id The ID of the client
+     * @param string|int $clientUuid The ID of the client
      * @return array New client secret information
      */
-    public function regenerateClientSecret($id): array;
+    public function regenerateClientSecret($clientUuid): array;
 
     /**
      * Get Roles of a user
      * 
-     * @param string $id
+     * @param string $userUuid
      * @return array
      */
-    public function getUserRoles($id): array;
+    public function getUserRoles($userUuid): array;
 
     /**
-     * Get all roles for the realm or client
+     * Get all roles for the client
      * 
-     * @param string $clientUuid
      * @return array
      * 
      */
-    public function getRoles($clientUuid): array;
+    public function getRoles(): array;
 
     /**
-     * Get all users with a specific role
+     * Get all users with a specific realm role
      * 
      * @param string $roleName
      * @return array
@@ -138,21 +137,19 @@ interface KeycloakProviderServiceInterface
     /**
      * Get all users with their roles
      * 
-     * @param string $clientUuid
      * @return array
      * 
      */
-    public function getUsersWithRoles($clientUuid): array;
+    public function getUsersWithRoles(): array;
 
     /**
      * Create a new role for the realm or client
      * 
-     * @param string $clientUuid
      * @param array $data
      * @return array
      * 
      */
-    public function createRole($clientUuid, $data): array;
+    public function createRole($data): array;
 
     /**
      * Get Client UUID by client ID
@@ -164,13 +161,12 @@ interface KeycloakProviderServiceInterface
     public function getClientUuid($clientId): string;
 
     /**
-     * Get user sessions for client Returns a list of user sessions associated with this client
+     * Retrieves a list of user sessions associated with the Keycloak client.
      * 
-     * @param string $clientUuid
      * @return array
      * 
      */
-    public function getUserSessions($clientUuid): array;
+    public function getClientSessions(): array;
 
     /**
      * Get client session stats Returns a JSON map.
@@ -183,11 +179,11 @@ interface KeycloakProviderServiceInterface
     /**
      * Get sessions associated with the user
      * 
-     * @param string $userId
+     * @param string $userUuid
      * @return array
      * 
      */
-    public function getUserSessionsByUserId($userId): array;
+    public function getUserSessionsByUserId($userUuid): array;
 
     /**
      * Retrieves the session details of the currently logged-in user.
@@ -237,13 +233,13 @@ interface KeycloakProviderServiceInterface
     /**
      * Reset the password of a user by ID.
      * 
-     * @param string $userId
+     * @param string $userUuid
      * @param string $newPassword
      * @return array
      * An array containing the response data.
      * 
      */
-    public function resetUserPassword($userId, $newPassword): array;
+    public function resetUserPassword($userUuid, $newPassword): array;
     
     /**
      * Update the profile of the currently logged-in user.
@@ -267,32 +263,32 @@ interface KeycloakProviderServiceInterface
     /**
      * Delete a session associated with the currently logged-in user by ID.
      * 
-     * @param string $sessionId
+     * @param string $sessionUuid
      * @return array
      * An array containing the response data.
      * 
      */
-    public function deleteCurrentUserSessionById($sessionId): array;
+    public function deleteCurrentUserSessionById($sessionUuid): array;
 
     /**
      * Send a verification email to a user to verify their email address.
      * 
-     * @param string $userId
+     * @param string $userUuid
      * @return array
      * An array containing the response data.
      * 
      */
-    public function sendVerificationEmail($userId): array;
+    public function sendVerificationEmail($userUuid): array;
 
     /**
      * Send a reset password email to a user to reset their password.
      * 
-     * @param string $userId
+     * @param string $userUuid
      * @return array
      * An array containing the response data.
      * 
      */
-    public function sendResetPasswordEmail($userId): array;
+    public function sendResetPasswordEmail($userUuid): array;
 
     /**
      * Check if the access token is expired
