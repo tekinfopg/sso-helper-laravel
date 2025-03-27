@@ -1143,4 +1143,56 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
             throw $e;
         }
     }
+
+    /**
+     * Retrieves a list of users assigned to a specific client role.
+     * 
+     * @param string $roleName
+     * 
+     * @return array
+     * An array containing the response data.
+     * 
+     */
+    public function getUsersByClientRole($roleName) : array
+    {
+        $clientUuid = Config::get('keycloak.client_id');
+
+        $users = [];
+
+        try {
+            $response = $this->getHttpClient()->get(
+                "{$this->baseUrl}admin/realms/{$this->realm}}/clients/{$clientUuid}/roles/{$roleName}/users",
+                [
+                    'headers' => [
+                        'Accept' => 'application/json',
+                    ],
+                ]
+            );
+
+            $response = json_decode($response->getBody(), true);
+
+            if (empty($response)) {
+                return $users;
+            }
+
+            foreach ($response as $user) {
+                $users[] = [
+                    'id' => $user['id'],
+                    'username' => $user['username'],
+                    'firstName' => $user['firstName'],
+                    'lastName' => $user['lastName'],
+                    'email' => $user['email'],
+                    'emailVerified' => $user['emailVerified'],
+                    'phoneNumber' => isset($user['attributes']) ?
+                    ($user['attributes']['phoneNumber'] ?? $user['attributes']['PhoneNumber'] ?? null)
+                    : null,
+                    'enabled' => $user['enabled'],
+                ];
+            }
+
+            return $users;
+        } catch (ClientException $e) {
+            throw $e;
+        }
+    }
 }
