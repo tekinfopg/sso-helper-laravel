@@ -1101,4 +1101,46 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
             throw $e;
         }
     }
+
+    /**
+     * Retrieves the Keycloak client roles assigned to a specific user.
+     * 
+     * @param string $userUuid
+     * 
+     * @return array
+     * An array containing the response data.
+     * 
+     */
+    public function getUserClientRoles($userUuid) : array
+    {
+        $clientUuid = Config::get('keycloak.client_id');
+
+        $clientRoles = [];
+
+        try {
+            $response = $this->getHttpClient()->get(
+                "{$this->baseUrl}admin/realms/{$this->realm}/users/{$userUuid}/role-mappings/clients/{$clientUuid}",
+                [
+                    'headers' => [
+                        'Accept' => 'application/json',
+                    ],
+                ]
+            );
+
+            $response = json_decode($response->getBody(), true);
+
+            foreach ($response as $role) {
+                if($role['name'] !== 'uma_protection') {
+                    $clientRoles[] = [
+                        'name' => $role['name'],
+                        'clientId' => $role['id']
+                    ];
+                }
+            }
+
+            return $clientRoles;
+        } catch (ClientException $e) {
+            throw $e;
+        }
+    }
 }

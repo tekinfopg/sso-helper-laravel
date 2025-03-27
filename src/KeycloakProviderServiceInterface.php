@@ -301,4 +301,15 @@ interface KeycloakProviderServiceInterface
      * 
      */
     public function isTokenExpired(): bool;
+
+    /**
+     * Retrieves the Keycloak client roles assigned to a specific user.
+     * 
+     * @param string $userUuid
+     * 
+     * @return array
+     * An array containing the response data.
+     * 
+     */
+    public function getUserClientRoles($userUuid) : array;
 }
