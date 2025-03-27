@@ -51,6 +51,12 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
      */
     protected $clientUuid;
 
+    /**
+     * The identifier of the Keycloak client.
+     *
+     * @var string
+     */
+    protected $clientId;
 
     /**
      * Keycloak client secret used for authentication.
@@ -80,6 +86,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
         $this->tokenSessionKey = Config::get('keycloak.session_access_token_field', 'access_token');
         $this->refreshTokenSessionKey = Config::get('keycloak.session_refresh_token_field', 'refresh_token');
         $this->clientUuid = Config::get('keycloak.client_uuid');
+        $this->clientId = Config::get('keycloak.client_id');
         $this->clientSecret = Config::get('keycloak.client_secret');
     }
 
@@ -1096,7 +1103,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                         'Content' => 'application/x-www-form-urlencoded',
                     ],
                     'form_params' => [
-                        'client_id' => $this->clientUuid,
+                        'client_id' => $this->clientId,
                         'client_secret' => $this->clientSecret,
                         'token' => $token,
                     ],
