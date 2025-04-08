@@ -404,14 +404,13 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
     /**
      * regenerate client secret
      * 
-     * @param string $clientUuid
      * @return array
      * @throws \Exception
      * 
      */
-    public function regenerateClientSecret($clientUuid): array
+    public function regenerateClientSecret(): array
     {
-        return $this->request('POST', "{$this->apiUrl}admin/realms/{$this->realm}/clients/{$clientUuid}/client-secret");
+        return $this->request('POST', "{$this->apiUrl}admin/realms/{$this->realm}/clients/{$this->clientUuid}/client-secret");
     }
 
     /**

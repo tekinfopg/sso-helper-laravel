@@ -107,7 +107,7 @@ interface KeycloakProviderServiceInterface
      * @param string|int $clientUuid The ID of the client
      * @return array New client secret information
      */
-    public function regenerateClientSecret($clientUuid): array;
+    public function regenerateClientSecret(): array;
 
     /**
      * Get Roles of a user
