@@ -123,7 +123,7 @@ interface KeycloakProviderServiceInterface
      * @return array
      * 
      */
-    public function getRoles(): array;
+    public function getClientRoles(): array;
 
     /**
      * Get all users with a specific realm role

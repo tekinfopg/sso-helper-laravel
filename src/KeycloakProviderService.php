@@ -434,7 +434,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
      * @throws \Exception
      */
 
-    public function getRoles(): array
+    public function getClientRoles(): array
     {
         return $this->request('GET', "{$this->apiUrl}admin/realms/{$this->realm}/clients/{$this->clientUuid}/roles");
     }
@@ -460,7 +460,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
     public function getUsersWithRoles(): array
     {
         $users = $this->getUserList();
-        $roles = $this->getRoles();
+        $roles = $this->getClientRoles();
         $roleMappings = [];
         foreach ($roles as $role) {
             $roleMappings[$role['id']] = $role['name'];
