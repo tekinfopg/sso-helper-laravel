@@ -556,7 +556,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
     {
         return $this->request('GET', "{$this->apiUrl}admin/realms/{$this->realm}/users/{$userUuid}/sessions");
     }
-    
+
     /**
      * Retrieves the session details of the currently logged-in user.
      *
@@ -568,7 +568,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
     {
         try {// Get token from session or user model
             $token = Session::get($this->tokenSessionKey) ?? (Auth::user() ? Auth::user()->{$this->tokenField} : null);
-            
+
             $response = $this->getHttpClient()->get(
                 "{$this->baseUrl}realms/{$this->realm}/account/sessions/devices",
                 [
@@ -605,7 +605,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
     {
         // Get token from session or user model
         $token = Session::get($this->tokenSessionKey) ?? (Auth::user() ? Auth::user()->{$this->tokenField} : null);
-        
+
         try {
             $response = $this->getHttpClient()->get(
                 "{$this->baseUrl}realms/{$this->realm}/account/applications",
@@ -631,7 +631,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
             throw $e;
         }
     }
-    
+
     /**
      * Retrieves the authentication credentials associated with the currently logged-in user.
      *
@@ -643,7 +643,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
     {
         // Get token from session or user model
         $token = Session::get($this->tokenSessionKey) ?? (Auth::user() ? Auth::user()->{$this->tokenField} : null);
-        
+
         try {
             $response = $this->getHttpClient()->get(
                 "{$this->baseUrl}realms/{$this->realm}/account/credentials",
@@ -669,7 +669,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
             throw $e;
         }
     }
-    
+
     /**
      * Retrieves the profile information of the currently logged-in user.
      * 
@@ -681,7 +681,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
     {
         // Get token from session or user model
         $token = Session::get($this->tokenSessionKey) ?? (Auth::user() ? Auth::user()->{$this->tokenField} : null);
-        
+
         try {
             $response = $this->getHttpClient()->get(
                 "{$this->baseUrl}realms/{$this->realm}/account",
@@ -721,7 +721,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
             throw $e;
         }
     }
-    
+
     /**
      * Retrieves the groups associated with the currently logged-in user.
      * 
@@ -733,7 +733,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
     {
         // Get token from session or user model
         $token = Session::get($this->tokenSessionKey) ?? (Auth::user() ? Auth::user()->{$this->tokenField} : null);
-        
+
         try {
             $response = $this->getHttpClient()->get(
                 "{$this->baseUrl}realms/{$this->realm}/account/groups",
@@ -749,7 +749,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
 
             $groups = [];
 
-            if(!is_array($response) || empty($response)) {
+            if (!is_array($response) || empty($response)) {
                 return $groups;
             }
 
@@ -802,14 +802,14 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                         ],
                     ]
                 );
-    
+
                 if ($response->getStatusCode() === 204) {
                     return [
                         'success' => true,
                         'message' => 'Password has been successfully updated.',
                     ];
                 }
-    
+
                 return [
                     'success' => false,
                     'message' => 'Failed to update password. Please try again later or contact support.',
@@ -820,7 +820,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                     sleep(1);
                     continue;
                 }
-    
+
                 throw $e;
             }
         }
@@ -830,7 +830,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
             'message' => 'User does not exist. Please verify your details or create a new account.',
         ];
     }
-    
+
     /**
      * Update the profile of the currently logged-in user.
      * 
@@ -843,7 +843,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
     {
         // Get token from session or user model
         $token = Session::get('access_token') ?? (Auth::user() ? Auth::user()->{$this->tokenField} : null);
-        
+
         try {
             $response = $this->getHttpClient()->post(
                 "{$this->baseUrl}realms/{$this->realm}/account",
@@ -899,7 +899,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
     {
         // Get token from session or user model
         $token = Session::get('access_token') ?? (Auth::user() ? Auth::user()->{$this->tokenField} : null);
-        
+
         try {
             $response = $this->getHttpClient()->delete(
                 "{$this->baseUrl}realms/{$this->realm}/account/sessions",
@@ -949,7 +949,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
     {
         // Get token from session or user model
         $token = Session::get('access_token') ?? (Auth::user() ? Auth::user()->{$this->tokenField} : null);
-        
+
         try {
             $response = $this->getHttpClient()->delete(
                 "{$this->baseUrl}realms/{$this->realm}/account/sessions/{$sessionUuid}",
@@ -1010,14 +1010,14 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                         ],
                     ]
                 );
-    
+
                 if ($response->getStatusCode() === 204) {
                     return [
                         'success' => true,
                         'message' => 'Verification email has been sent successfully.',
                     ];
                 }
-    
+
                 return [
                     'success' => false,
                     'message' => 'Failed to send verification email. Please try again later.',
@@ -1028,7 +1028,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                     sleep(1);
                     continue;
                 }
-    
+
                 throw $e;
             }
         }
@@ -1062,14 +1062,14 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                         ],
                     ]
                 );
-    
+
                 if ($response->getStatusCode() === 204) {
                     return [
                         'success' => true,
                         'message' => 'Reset password email has been sent successfully.',
                     ];
                 }
-    
+
                 return [
                     'success' => false,
                     'message' => 'Failed to send reset password email. Please try again later.',
@@ -1080,7 +1080,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                     sleep(1);
                     continue;
                 }
-    
+
                 throw $e;
             }
         }
@@ -1136,7 +1136,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
      * An array containing the response data.
      * 
      */
-    public function getUserClientRoles($userUuid) : array
+    public function getUserClientRoles($userUuid): array
     {
         $clientRoles = [];
 
@@ -1153,7 +1153,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
             $response = json_decode($response->getBody(), true);
 
             foreach ($response as $role) {
-                if($role['name'] !== 'uma_protection') {
+                if ($role['name'] !== 'uma_protection') {
                     $clientRoles[] = [
                         'name' => $role['name'],
                         'clientId' => $role['id']
@@ -1176,7 +1176,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
      * An array containing the response data.
      * 
      */
-    public function getUsersByClientRole($roleName) : array
+    public function getUsersByClientRole($roleName): array
     {
         $users = [];
 
@@ -1205,13 +1205,57 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                     'email' => $user['email'],
                     'emailVerified' => $user['emailVerified'],
                     'phoneNumber' => isset($user['attributes']) ?
-                    ($user['attributes']['phoneNumber'] ?? $user['attributes']['PhoneNumber'] ?? null)
-                    : null,
+                        ($user['attributes']['phoneNumber'] ?? $user['attributes']['PhoneNumber'] ?? null)
+                        : null,
                     'enabled' => $user['enabled'],
                 ];
             }
 
             return $users;
+        } catch (ClientException $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * Get user roles by ID, in client
+     * 
+     * @param string $userUuid
+     * @return array
+     * An array containing the user roles.
+     * 
+     */
+    public function getUserClientRolesById($userUuid): array
+    {
+        $clientRoles = [];
+
+        try {
+            $response = $this->getHttpClient()->get(
+                "{$this->apiUrl}admin/realms/{$this->realm}/users/{$userUuid}/role-mappings",
+                [
+                    'headers' => [
+                        'Accept' => 'application/json',
+                    ],
+                ]
+            );
+
+            $response = json_decode($response->getBody(), true);
+
+            $roles = $response['clientMappings'][$this->clientId]['mappings'] ?? [];
+
+            if (empty($roles)) {
+                return $clientRoles;
+            }
+            foreach ($roles as $role) {
+                if ($role['name'] !== 'uma_protection') {
+                    $clientRoles[] = [
+                        'name' => $role['name'],
+                        'clientId' => $role['id']
+                    ];
+                }
+            }
+
+            return $clientRoles;
         } catch (ClientException $e) {
             throw $e;
         }
