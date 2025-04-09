@@ -89,6 +89,18 @@ Route::get('/get-users-keycloak', function (KeycloakProviderServiceInterface $ke
 });
 ```
 
+## Env
+
+```env
+KEYCLOAK_CLIENT_ID=client
+KEYCLOAK_CLIENT_SECRET=secret_value
+KEYCLOAK_CLIENT_UUID=uuid_value
+KEYCLOAK_REDIRECT_URI=redirect_uri_value
+KEYCLOAK_BASE_URL=https://example.com/
+KEYCLOAK_REALM=example_realm
+KEYCLOAK_API_URL=https://api.example.com/
+```
+
 ## Contributing
 
 Contributions are welcome! Feel free to submit a pull request or open an issue.
