@@ -11,7 +11,7 @@ This package provides integration between Laravel and Keycloak, enabling Single 
 
 1. Require the package:
    ```bash
-   composer require edoaurahman/keycloak-sso
+   composer require tekinfopg/sso-helper-laravel
    ```
 
 2. Publish and configure the package:
