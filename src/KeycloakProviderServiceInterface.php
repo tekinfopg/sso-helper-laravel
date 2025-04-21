@@ -329,4 +329,14 @@ interface KeycloakProviderServiceInterface
      * 
      */
     public function getUserClientRolesById($userUuid): array;
+
+    /**
+     * Keycloak introspect token
+     * 
+     * @param string $token
+     * @return array
+     * An array containing the token introspection data.
+     * 
+     */
+    public function introspectToken($token): array;
 }

@@ -1260,4 +1260,36 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
             throw $e;
         }
     }
+
+    /**
+     * Keycloak introspect token
+     * 
+     * @param string $token
+     * @return array
+     * An array containing the token introspection data.
+     * 
+     */
+    public function introspectToken($token): array
+    {
+        try {
+            $response = $this->getHttpClient()->post(
+                "{$this->baseUrl}realms/{$this->realm}/protocol/openid-connect/token/introspect",
+                [
+                    'headers' => [
+                        'Accept' => 'application/json',
+                        'Content-Type' => 'application/x-www-form-urlencoded',
+                    ],
+                    'form_params' => [
+                        'client_id' => $this->clientId,
+                        'client_secret' => $this->clientSecret,
+                        'token' => $token,
+                    ],
+                ]
+            );
+
+            return json_decode($response->getBody(), true);
+        } catch (ClientException $e) {
+            throw $e;
+        }
+    }
 }
