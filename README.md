@@ -11,7 +11,7 @@ This package provides integration between Laravel and Keycloak, enabling Single 
 
 1. Require the package:
    ```bash
-   composer require edoaurahman/keycloak-sso
+   composer require tekinfopg/sso-helper-laravel
    ```
 
 2. Publish and configure the package:
@@ -87,6 +87,18 @@ Route::get('/callback-keycloak', function () {
 Route::get('/get-users-keycloak', function (KeycloakProviderServiceInterface $keycloak) {
     return $keycloak->getUserList();
 });
+```
+
+## Env
+
+```env
+KEYCLOAK_CLIENT_ID=client
+KEYCLOAK_CLIENT_SECRET=secret_value
+KEYCLOAK_CLIENT_UUID=uuid_value
+KEYCLOAK_REDIRECT_URI=redirect_uri_value
+KEYCLOAK_BASE_URL=https://example.com/
+KEYCLOAK_REALM=example_realm
+KEYCLOAK_API_URL=https://api.example.com/
 ```
 
 ## Contributing
