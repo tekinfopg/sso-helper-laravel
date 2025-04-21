@@ -1182,7 +1182,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
 
         try {
             $response = $this->getHttpClient()->get(
-                "{$this->apiUrl}admin/realms/{$this->realm}/clients/{$this->clientUuid}/roles/{$roleName}/users",
+                "{$this->apiUrl}admin/realms/{$this->realm}/clients/{$this->clientUuid}/roles/{$roleName}",
                 [
                     'headers' => [
                         'Accept' => 'application/json',
