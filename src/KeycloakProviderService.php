@@ -1296,4 +1296,29 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
             throw $e;
         }
     }
+
+    /**
+     * Get events from Keycloak
+     * 
+     * @return array
+     * An array containing the events data.
+     * 
+     */
+    public function getKeycloakEvents(): array
+    {
+        try {
+            $response = $this->getHttpClient()->get(
+                "{$this->apiUrl}admin/realms/{$this->realm}/events",
+                [
+                    'headers' => [
+                        'Accept' => 'application/json',
+                    ],
+                ]
+            );
+
+            return json_decode($response->getBody(), true);
+        } catch (ClientException $e) {
+            throw $e;
+        }
+    }
 }

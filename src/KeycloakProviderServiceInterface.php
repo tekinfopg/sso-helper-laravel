@@ -339,4 +339,13 @@ interface KeycloakProviderServiceInterface
      * 
      */
     public function introspectToken($token): array;
+
+    /**
+     * Get events from Keycloak
+     * 
+     * @return array
+     * An array containing the events data.
+     * 
+     */
+    public function getKeycloakEvents(): array;
 }
