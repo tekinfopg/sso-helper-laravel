@@ -348,4 +348,12 @@ interface KeycloakProviderServiceInterface
      * 
      */
     public function getKeycloakEvents(): array;
+
+    /**
+     * Get user events from Keycloak
+     * 
+     * @param string $userUuid
+     * @return array
+     */
+    public function getUserEvents($userUuid): array;
 }
