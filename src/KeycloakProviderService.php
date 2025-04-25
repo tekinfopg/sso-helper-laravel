@@ -707,6 +707,9 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                     : null,
                 'nik' => isset($response['attributes']) ?
                     ($response['attributes']['nik'] ?? $response['attributes']['NIK'] ?? null) : null,
+                    : null,
+                'department' => isset($response['attributes']) ?
+                    ($response['attributes']['department'] ?? $response['attributes']['DEPARTMENT'] ?? null) : null,
             ];
 
             return $profile;
