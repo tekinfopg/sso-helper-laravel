@@ -1345,4 +1345,44 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
             throw $e;
         }
     }
+
+    /**
+     * Custom login redirect
+     * 
+     * @param string $redirectUri
+     * @param string|null $clientId
+     * @param string|null $clientSecret
+     * @param string|null $realm
+     * @return string
+     * A string containing the redirect URI.
+     */
+    public function getCustomLoginRedirect($redirectUri, $clientId = null, $clientSecret = null, $realm = null): string
+    {
+        $redirectUri = urlencode($redirectUri);
+        $clientId = $clientId ?? urlencode($this->clientId);
+        $clientSecret = $clientSecret ?? urlencode($this->clientSecret);
+        $realm = $realm ?? urlencode($this->realm);
+        $url = "{$this->baseUrl}realms/{$realm}/protocol/openid-connect/auth?client_id={$clientId}&client_secret={$clientSecret}&redirect_uri={$redirectUri}&response_type=code&scope=openid";
+        return $url;
+    }
+
+    /**
+     * Custom logout redirect
+     * 
+     * @param string $redirectUri
+     * @param string|null $clientId
+     * @param string|null $clientSecret
+     * @param string|null $realm
+     * @return string
+     * A string containing the redirect URI.
+     */
+    public function getCustomLogoutRedirect($redirectUri, $clientId = null, $clientSecret = null, $realm = null): string
+    {
+        $redirectUri = urlencode($redirectUri);
+        $clientId = $clientId ?? urlencode($this->clientId);
+        $clientSecret = $clientSecret ?? urlencode($this->clientSecret);
+        $realm = $realm ?? urlencode($this->realm);
+        $url = "{$this->baseUrl}realms/{$realm}/protocol/openid-connect/logout?client_id={$clientId}&client_secret={$clientSecret}&redirect_uri={$redirectUri}";
+        return $url;
+    }
 }

@@ -356,4 +356,28 @@ interface KeycloakProviderServiceInterface
      * @return array
      */
     public function getUserEvents($userUuid): array;
+
+    /**
+     * Custom login redirect
+     * 
+     * @param string $redirectUri
+     * @param string|null $clientId
+     * @param string|null $clientSecret
+     * @param string|null $realm
+     * @return string
+     * A string containing the redirect URI.
+     */
+    public function getCustomLoginRedirect($redirectUri, $clientId = null, $clientSecret = null, $realm = null): string;
+    
+    /**
+     * Custom logout redirect
+     * 
+     * @param string $redirectUri
+     * @param string|null $clientId
+     * @param string|null $clientSecret
+     * @param string|null $realm
+     * @return string
+     * A string containing the redirect URI.
+     */
+    public function getCustomLogoutRedirect($redirectUri, $clientId = null, $clientSecret = null, $realm = null): string;
 }
