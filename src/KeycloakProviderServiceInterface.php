@@ -211,6 +211,16 @@ interface KeycloakProviderServiceInterface
      * 
      */
     public function getCurrentUserCredentials(): array;
+
+    /**
+     * Delete a credential associated with the currently logged-in user by ID.
+     * 
+     * @param string $credentialUuid
+     * 
+     * @return array
+     * An array containing the response data.
+     */
+    public function deleteCurrentUserCredentialsById($credentialUuid): array;
     
     /**
      * Retrieves the profile information of the currently logged-in user.
