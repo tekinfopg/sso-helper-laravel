@@ -502,7 +502,28 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
      */
     public function createRole($data): array
     {
-        return $this->request('POST', "{$this->apiUrl}admin/realms/{$this->realm}/clients/{$this->clientUuid}/roles", $data);
+        try {
+            $response = $this->getHttpClient()->post(
+                "{$this->apiUrl}admin/realms/{$this->realm}/roles",
+                [
+                    'headers' => [
+                        'Accept' => 'application/json',
+                        'Content-Type' => 'application/json',
+                    ],
+                    'json' => $data,
+                ]
+            );
+
+            if ($response->getStatusCode() === 201) {
+                return [
+                    'success' => true,
+                    'message' => 'Role has been successfully created.',
+                ];
+            }
+            return json_decode($response->getBody(), true);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 
     /**
