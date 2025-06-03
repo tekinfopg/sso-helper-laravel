@@ -1461,4 +1461,214 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
         $url = "{$this->baseUrl}realms/{$realm}/protocol/openid-connect/logout?client_id={$clientId}&client_secret={$clientSecret}&redirect_uri={$redirectUri}";
         return $url;
     }
+
+    /**
+     * Get user by username
+     * 
+     * @param string $username
+     * @return array
+     * An array containing user data.
+     */
+    public function getUserByUsername($username): array
+    {
+        try {
+            $response = $this->request('GET', "{$this->apiUrl}admin/realms/{$this->realm}/users", [
+                'username' => $username,
+                'exact' => true
+            ]);
+
+            if (empty($response)) {
+                throw new \Exception("User with username '{$username}' not found");
+            }
+
+            return $response[0];
+        } catch (\Exception $e) {
+            throw new \Exception("Failed to get user by username: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Get client role by name
+     * 
+     * @param string $roleName
+     * @return array
+     * An array containing role data.
+     */
+    public function getClientRoleByName($roleName): array
+    {
+        try {
+            $response = $this->request('GET', "{$this->apiUrl}admin/realms/{$this->realm}/clients/{$this->clientUuid}/roles/{$roleName}");
+            return $response;
+        } catch (\Exception $e) {
+            throw new \Exception("Failed to get client role '{$roleName}': " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Assign client role to user by username
+     * 
+     * @param string $username
+     * @param string $roleName
+     * @return array
+     * An array containing the response data.
+     */
+    public function assignClientRoleToUser($username, $roleName): array
+    {
+        try {
+            // Get user by username
+            $user = $this->getUserByUsername($username);
+            $userUuid = $user['id'];
+
+            // Get role by name
+            $role = $this->getClientRoleByName($roleName);
+
+            // Assign role to user
+            $response = $this->request(
+                'POST',
+                "{$this->apiUrl}admin/realms/{$this->realm}/users/{$userUuid}/role-mappings/clients/{$this->clientUuid}",
+                [$role]
+            );
+
+            return [
+                'success' => true,
+                'message' => "Role '{$roleName}' has been successfully assigned to user '{$username}'.",
+                'user_id' => $userUuid,
+                'role_name' => $roleName
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => "Failed to assign role '{$roleName}' to user '{$username}': " . $e->getMessage(),
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Remove client role from user by username
+     * 
+     * @param string $username
+     * @param string $roleName
+     * @return array
+     * An array containing the response data.
+     */
+    public function removeClientRoleFromUser($username, $roleName): array
+    {
+        try {
+            // Get user by username
+            $user = $this->getUserByUsername($username);
+            $userUuid = $user['id'];
+
+            // Get role by name
+            $role = $this->getClientRoleByName($roleName);
+
+            // Remove role from user
+            $response = $this->request(
+                'DELETE',
+                "{$this->apiUrl}admin/realms/{$this->realm}/users/{$userUuid}/role-mappings/clients/{$this->clientUuid}",
+                [$role]
+            );
+
+            return [
+                'success' => true,
+                'message' => "Role '{$roleName}' has been successfully removed from user '{$username}'.",
+                'user_id' => $userUuid,
+                'role_name' => $roleName
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => "Failed to remove role '{$roleName}' from user '{$username}': " . $e->getMessage(),
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Sync multiple roles for a user by username
+     * 
+     * @param string $username
+     * @param array $roleNames
+     * @param bool $replaceExisting
+     * @return array
+     * An array containing the response data.
+     */
+    public function syncUserClientRoles($username, array $roleNames, bool $replaceExisting = false): array
+    {
+        try {
+            // Get user by username
+            $user = $this->getUserByUsername($username);
+            $userUuid = $user['id'];
+
+            $results = [
+                'success' => true,
+                'message' => "Role synchronization completed for user '{$username}'.",
+                'user_id' => $userUuid,
+                'assigned_roles' => [],
+                'removed_roles' => [],
+                'failed_assignments' => [],
+                'failed_removals' => []
+            ];
+
+            // If replace existing, get current roles and remove them
+            if ($replaceExisting) {
+                try {
+                    $currentRoles = $this->getUserClientRolesById($userUuid);
+
+                    foreach ($currentRoles as $currentRole) {
+                        if (!in_array($currentRole['name'], $roleNames)) {
+                            $removeResult = $this->removeClientRoleFromUser($username, $currentRole['name']);
+                            if ($removeResult['success']) {
+                                $results['removed_roles'][] = $currentRole['name'];
+                            } else {
+                                $results['failed_removals'][] = [
+                                    'role' => $currentRole['name'],
+                                    'error' => $removeResult['message']
+                                ];
+                            }
+                        }
+                    }
+                } catch (\Exception $e) {
+                    $results['failed_removals'][] = [
+                        'error' => 'Failed to get current roles: ' . $e->getMessage()
+                    ];
+                }
+            }
+
+            // Assign new roles
+            foreach ($roleNames as $roleName) {
+                try {
+                    $assignResult = $this->assignClientRoleToUser($username, $roleName);
+                    if ($assignResult['success']) {
+                        $results['assigned_roles'][] = $roleName;
+                    } else {
+                        $results['failed_assignments'][] = [
+                            'role' => $roleName,
+                            'error' => $assignResult['message']
+                        ];
+                    }
+                } catch (\Exception $e) {
+                    $results['failed_assignments'][] = [
+                        'role' => $roleName,
+                        'error' => $e->getMessage()
+                    ];
+                }
+            }
+
+            // Determine overall success
+            $hasFailures = !empty($results['failed_assignments']) || !empty($results['failed_removals']);
+            if ($hasFailures) {
+                $results['success'] = false;
+                $results['message'] = "Role synchronization completed with some errors for user '{$username}'.";
+            }
+
+            return $results;
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => "Failed to sync roles for user '{$username}': " . $e->getMessage(),
+                'error' => $e->getMessage()
+            ];
+        }
+    }
 }

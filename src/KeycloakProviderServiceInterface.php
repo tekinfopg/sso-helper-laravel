@@ -14,7 +14,7 @@ interface KeycloakProviderServiceInterface
      * @return void
      */
     public function setBaseUrl($baseUrl): void;
-    
+
     /**
      * set realm
      * @param string $realm
@@ -202,7 +202,7 @@ interface KeycloakProviderServiceInterface
      * 
      */
     public function getCurrentUserClients(): array;
-    
+
     /**
      * Retrieves the authentication credentials associated with the currently logged-in user.
      *
@@ -221,7 +221,7 @@ interface KeycloakProviderServiceInterface
      * An array containing the response data.
      */
     public function deleteCurrentUserCredentialsById($credentialUuid): array;
-    
+
     /**
      * Retrieves the profile information of the currently logged-in user.
      * 
@@ -230,7 +230,7 @@ interface KeycloakProviderServiceInterface
      *
      */
     public function getCurrentUserProfile(): array;
-    
+
     /**
      * Retrieves the groups associated with the currently logged-in user.
      * 
@@ -250,7 +250,7 @@ interface KeycloakProviderServiceInterface
      * 
      */
     public function resetUserPassword($userUuid, $newPassword): array;
-    
+
     /**
      * Update the profile of the currently logged-in user.
      * 
@@ -260,7 +260,7 @@ interface KeycloakProviderServiceInterface
      * 
      */
     public function updateCurrentUserProfile($data): array;
-    
+
     /**
      * Delete all sessions except current session associated with the currently logged-in user.
      * 
@@ -317,7 +317,7 @@ interface KeycloakProviderServiceInterface
      * An array containing the response data.
      * 
      */
-    public function getUserClientRoles($userUuid) : array;
+    public function getUserClientRoles($userUuid): array;
 
     /**
      * Retrieves a list of users assigned to a specific client role.
@@ -328,7 +328,7 @@ interface KeycloakProviderServiceInterface
      * An array containing the response data.
      * 
      */
-    public function getUsersByClientRole($roleName) : array;
+    public function getUsersByClientRole($roleName): array;
 
     /**
      * Get user roles by ID, in client
@@ -378,7 +378,7 @@ interface KeycloakProviderServiceInterface
      * A string containing the redirect URI.
      */
     public function getCustomLoginRedirect($redirectUri, $clientId = null, $clientSecret = null, $realm = null): string;
-    
+
     /**
      * Custom logout redirect
      * 
@@ -390,4 +390,53 @@ interface KeycloakProviderServiceInterface
      * A string containing the redirect URI.
      */
     public function getCustomLogoutRedirect($redirectUri, $clientId = null, $clientSecret = null, $realm = null): string;
+
+    /**
+     * Assign client role to user by username
+     * 
+     * @param string $username
+     * @param string $roleName
+     * @return array
+     * An array containing the response data.
+     */
+    public function assignClientRoleToUser($username, $roleName): array;
+
+    /**
+     * Remove client role from user by username
+     * 
+     * @param string $username
+     * @param string $roleName
+     * @return array
+     * An array containing the response data.
+     */
+    public function removeClientRoleFromUser($username, $roleName): array;
+
+    /**
+     * Sync multiple roles for a user by username
+     * 
+     * @param string $username
+     * @param array $roleNames
+     * @param bool $replaceExisting
+     * @return array
+     * An array containing the response data.
+     */
+    public function syncUserClientRoles($username, array $roleNames, bool $replaceExisting = false): array;
+
+    /**
+     * Get user by username
+     * 
+     * @param string $username
+     * @return array
+     * An array containing user data.
+     */
+    public function getUserByUsername($username): array;
+
+    /**
+     * Get client role by name
+     * 
+     * @param string $roleName
+     * @return array
+     * An array containing role data.
+     */
+    public function getClientRoleByName($roleName): array;
 }
