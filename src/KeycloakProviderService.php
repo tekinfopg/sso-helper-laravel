@@ -691,6 +691,61 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
         }
     }
 
+    public function deleteCurrentUserCredentialsById($credentialUuid): array
+    {
+        $token = Session::get('access_token') ?? (Auth::user() ? Auth::user()->{$this->tokenField} : null);
+
+        try {
+            $response = $this->getHttpClient()->delete(
+                "{$this->baseUrl}realms/{$this->realm}/account/credentials/{$credentialUuid}",
+                [
+                    'headers' => [
+                        'Accept' => 'application/json',
+                        'Authorization' => "Bearer {$token}",
+                    ],
+                ]
+            );
+
+            if ($response->getStatusCode() === 204) {
+                return [
+                    'success' => true,
+                    'message' => 'Credentials deleted successfully.',
+                ];
+            }
+
+            if ($response->getStatusCode() === 403) {
+                return [
+                    'success' => false,
+                    'message' => 'Forbidden.',
+                ];
+            }
+
+            if ($response->getStatusCode() === 404) {
+                return [
+                    'success' => false,
+                    'message' => 'Credentials not found.',
+                ];
+            }
+
+            return [
+                'success' => false,
+                'message' => 'Unable to delete user credentials. Please try again later or contact support.',
+            ];
+        } catch (ClientException $e) {
+            // Check if token expired (401 Unauthorized)
+            if ($e->getResponse()->getStatusCode() === 401) {
+                // Try to refresh the token
+                $newToken = $this->refreshToken(Session::get('refresh_token'));
+                if ($newToken) {
+                    // Retry with the new token
+                    return $this->deleteCurrentUserCredentialsById($credentialUuid);
+                }
+            }
+
+            throw $e;
+        }
+    }
+
     /**
      * Retrieves the profile information of the currently logged-in user.
      * 
