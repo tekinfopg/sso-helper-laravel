@@ -459,4 +459,14 @@ interface KeycloakProviderServiceInterface
      * @return array
      */
     public function bulkRemoveClientRolesFromUser($username, array $roleNames): array;
+
+    /**
+     * Set access token
+     */
+    public function setAccessToken($accessToken): void;
+
+    /**
+     * Set refresh token
+     */
+    public function setRefreshToken($refreshToken): void;
 }

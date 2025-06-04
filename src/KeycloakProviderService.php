@@ -1789,7 +1789,8 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
             // Assign valid roles in bulk
             if (!empty($rolesData)) {
                 try {
-                    $response = $this->request('POST', 
+                    $response = $this->request(
+                        'POST',
                         "{$this->apiUrl}admin/realms/{$this->realm}/users/{$userUuid}/role-mappings/clients/{$this->clientUuid}",
                         $rolesData
                     );
@@ -1873,7 +1874,8 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
             // Remove roles in bulk
             if (!empty($rolesData)) {
                 try {
-                    $response = $this->request('DELETE', 
+                    $response = $this->request(
+                        'DELETE',
                         "{$this->apiUrl}admin/realms/{$this->realm}/users/{$userUuid}/role-mappings/clients/{$this->clientUuid}",
                         $rolesData
                     );
@@ -1893,5 +1895,21 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                 'error' => $e->getMessage()
             ];
         }
+    }
+
+    /** 
+     * Set access token to the session
+     */
+    public function setAccessToken($token): void
+    {
+        Session::put('access_token', $token);
+    }
+
+    /** 
+     * Set refresh token to the session
+     */
+    public function setRefreshToken($token): void
+    {
+        Session::put('refresh_token', $token);
     }
 }
