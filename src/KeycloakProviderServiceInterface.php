@@ -439,4 +439,24 @@ interface KeycloakProviderServiceInterface
      * An array containing role data.
      */
     public function getClientRoleByName($roleName): array;
+
+    /**
+     * Bulk assign multiple roles to user
+     * 
+     * @param string $username
+     * @param array $roleNames
+     * @return array
+     */
+    public function bulkAssignClientRolesToUser($username, array $roleNames): array;
+
+
+
+    /**
+     * Bulk remove multiple roles from user
+     * 
+     * @param string $username
+     * @param array $roleNames
+     * @return array
+     */
+    public function bulkRemoveClientRolesFromUser($username, array $roleNames): array;
 }

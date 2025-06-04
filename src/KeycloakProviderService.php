@@ -1522,18 +1522,42 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
             // Get role by name
             $role = $this->getClientRoleByName($roleName);
 
+            // Check if user already has this role
+            $currentRoles = $this->getUserClientRolesById($userUuid);
+            foreach ($currentRoles as $currentRole) {
+                if ($currentRole['name'] === $roleName) {
+                    return [
+                        'success' => true,
+                        'message' => "Role '{$roleName}' is already assigned to user '{$username}'.",
+                        'user_id' => $userUuid,
+                        'role_name' => $roleName
+                    ];
+                }
+            }
+
+            // Format the role data properly for Keycloak API
+            $roleData = [
+                [
+                    'id' => $role['id'],
+                    'name' => $role['name'],
+                    'clientRole' => true,
+                    'containerId' => $this->clientUuid
+                ]
+            ];
+
             // Assign role to user
             $response = $this->request(
                 'POST',
                 "{$this->apiUrl}admin/realms/{$this->realm}/users/{$userUuid}/role-mappings/clients/{$this->clientUuid}",
-                [$role]
+                $roleData
             );
 
             return [
                 'success' => true,
                 'message' => "Role '{$roleName}' has been successfully assigned to user '{$username}'.",
                 'user_id' => $userUuid,
-                'role_name' => $roleName
+                'role_name' => $roleName,
+                'role_data' => $role
             ];
         } catch (\Exception $e) {
             return [
@@ -1562,18 +1586,48 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
             // Get role by name
             $role = $this->getClientRoleByName($roleName);
 
+            // Check if user has this role
+            $currentRoles = $this->getUserClientRolesById($userUuid);
+            $hasRole = false;
+            foreach ($currentRoles as $currentRole) {
+                if ($currentRole['name'] === $roleName) {
+                    $hasRole = true;
+                    break;
+                }
+            }
+
+            if (!$hasRole) {
+                return [
+                    'success' => true,
+                    'message' => "Role '{$roleName}' is not assigned to user '{$username}'.",
+                    'user_id' => $userUuid,
+                    'role_name' => $roleName
+                ];
+            }
+
+            // Format the role data properly for Keycloak API
+            $roleData = [
+                [
+                    'id' => $role['id'],
+                    'name' => $role['name'],
+                    'clientRole' => true,
+                    'containerId' => $this->clientUuid
+                ]
+            ];
+
             // Remove role from user
             $response = $this->request(
                 'DELETE',
                 "{$this->apiUrl}admin/realms/{$this->realm}/users/{$userUuid}/role-mappings/clients/{$this->clientUuid}",
-                [$role]
+                $roleData
             );
 
             return [
                 'success' => true,
                 'message' => "Role '{$roleName}' has been successfully removed from user '{$username}'.",
                 'user_id' => $userUuid,
-                'role_name' => $roleName
+                'role_name' => $roleName,
+                'role_data' => $role
             ];
         } catch (\Exception $e) {
             return [
@@ -1667,6 +1721,175 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
             return [
                 'success' => false,
                 'message' => "Failed to sync roles for user '{$username}': " . $e->getMessage(),
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Bulk assign multiple roles to user
+     * 
+     * @param string $username
+     * @param array $roleNames
+     * @return array
+     */
+    public function bulkAssignClientRolesToUser($username, array $roleNames): array
+    {
+        try {
+            // Get user by username
+            $user = $this->getUserByUsername($username);
+            $userUuid = $user['id'];
+
+            // Get current user roles
+            $currentRoles = $this->getUserClientRolesById($userUuid);
+            $currentRoleNames = array_column($currentRoles, 'name');
+
+            // Filter out roles that user already has
+            $rolesToAssign = array_diff($roleNames, $currentRoleNames);
+
+            if (empty($rolesToAssign)) {
+                return [
+                    'success' => true,
+                    'message' => "All specified roles are already assigned to user '{$username}'.",
+                    'user_id' => $userUuid,
+                    'assigned_roles' => [],
+                    'skipped_roles' => $roleNames
+                ];
+            }
+
+            // Prepare roles data for bulk assignment
+            $rolesData = [];
+            $validRoles = [];
+            $invalidRoles = [];
+
+            foreach ($rolesToAssign as $roleName) {
+                try {
+                    $role = $this->getClientRoleByName($roleName);
+                    $rolesData[] = [
+                        'id' => $role['id'],
+                        'name' => $role['name'],
+                        'clientRole' => true,
+                        'containerId' => $this->clientUuid
+                    ];
+                    $validRoles[] = $roleName;
+                } catch (\Exception $e) {
+                    $invalidRoles[] = $roleName;
+                }
+            }
+
+            $result = [
+                'success' => true,
+                'message' => "Bulk role assignment completed for user '{$username}'.",
+                'user_id' => $userUuid,
+                'assigned_roles' => [],
+                'skipped_roles' => array_intersect($roleNames, $currentRoleNames),
+                'invalid_roles' => $invalidRoles
+            ];
+
+            // Assign valid roles in bulk
+            if (!empty($rolesData)) {
+                try {
+                    $response = $this->request('POST', 
+                        "{$this->apiUrl}admin/realms/{$this->realm}/users/{$userUuid}/role-mappings/clients/{$this->clientUuid}",
+                        $rolesData
+                    );
+                    $result['assigned_roles'] = $validRoles;
+                } catch (\Exception $e) {
+                    $result['success'] = false;
+                    $result['message'] = "Failed to assign roles to user '{$username}': " . $e->getMessage();
+                    $result['error'] = $e->getMessage();
+                }
+            }
+
+            return $result;
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => "Failed to bulk assign roles to user '{$username}': " . $e->getMessage(),
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Bulk remove multiple roles from user
+     * 
+     * @param string $username
+     * @param array $roleNames
+     * @return array
+     */
+    public function bulkRemoveClientRolesFromUser($username, array $roleNames): array
+    {
+        try {
+            // Get user by username
+            $user = $this->getUserByUsername($username);
+            $userUuid = $user['id'];
+
+            // Get current user roles
+            $currentRoles = $this->getUserClientRolesById($userUuid);
+            $currentRoleNames = array_column($currentRoles, 'name');
+
+            // Filter roles that user actually has
+            $rolesToRemove = array_intersect($roleNames, $currentRoleNames);
+
+            if (empty($rolesToRemove)) {
+                return [
+                    'success' => true,
+                    'message' => "None of the specified roles are assigned to user '{$username}'.",
+                    'user_id' => $userUuid,
+                    'removed_roles' => [],
+                    'not_assigned_roles' => $roleNames
+                ];
+            }
+
+            // Prepare roles data for bulk removal
+            $rolesData = [];
+            $validRoles = [];
+
+            foreach ($rolesToRemove as $roleName) {
+                // Find role data from current roles
+                foreach ($currentRoles as $currentRole) {
+                    if ($currentRole['name'] === $roleName) {
+                        $rolesData[] = [
+                            'id' => $currentRole['id'],
+                            'name' => $currentRole['name'],
+                            'clientRole' => true,
+                            'containerId' => $this->clientUuid
+                        ];
+                        $validRoles[] = $roleName;
+                        break;
+                    }
+                }
+            }
+
+            $result = [
+                'success' => true,
+                'message' => "Bulk role removal completed for user '{$username}'.",
+                'user_id' => $userUuid,
+                'removed_roles' => [],
+                'not_assigned_roles' => array_diff($roleNames, $currentRoleNames)
+            ];
+
+            // Remove roles in bulk
+            if (!empty($rolesData)) {
+                try {
+                    $response = $this->request('DELETE', 
+                        "{$this->apiUrl}admin/realms/{$this->realm}/users/{$userUuid}/role-mappings/clients/{$this->clientUuid}",
+                        $rolesData
+                    );
+                    $result['removed_roles'] = $validRoles;
+                } catch (\Exception $e) {
+                    $result['success'] = false;
+                    $result['message'] = "Failed to remove roles from user '{$username}': " . $e->getMessage();
+                    $result['error'] = $e->getMessage();
+                }
+            }
+
+            return $result;
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => "Failed to bulk remove roles from user '{$username}': " . $e->getMessage(),
                 'error' => $e->getMessage()
             ];
         }
