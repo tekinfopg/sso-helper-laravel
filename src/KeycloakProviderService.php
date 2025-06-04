@@ -1472,10 +1472,21 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
     public function getUserByUsername($username): array
     {
         try {
-            $response = $this->request('GET', "{$this->apiUrl}admin/realms/{$this->realm}/users", [
-                'username' => $username,
-                'exact' => true
-            ]);
+            $response = $this->getHttpClient()->get(
+                "{$this->apiUrl}admin/realms/{$this->realm}/users",
+                [
+                    'headers' => [
+                        'Accept' => 'application/json',
+                        'Authorization' => "Bearer " . (Session::get($this->tokenSessionKey) ?? Auth::user()->{$this->tokenField}),
+                    ],
+                    'query' => [
+                        'username' => $username,
+                        'exact' => true
+                    ]
+                ]
+            );
+
+            $response = json_decode($response->getBody(), true);
 
             if (empty($response)) {
                 throw new \Exception("User with username '{$username}' not found");
