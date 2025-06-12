@@ -1280,8 +1280,8 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                 $users[] = [
                     'id' => $user['id'],
                     'username' => $user['username'],
-                    'firstName' => $user['firstName'],
-                    'lastName' => $user['lastName'],
+                    'firstName' => $user['firstName'] ?? null,
+                    'lastName' => $user['lastName'] ?? null,
                     'email' => $user['email'],
                     'emailVerified' => $user['emailVerified'],
                     'phoneNumber' => isset($user['attributes']) ?
@@ -1489,10 +1489,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
             $response = json_decode($response->getBody(), true);
 
             if (empty($response)) {
-                $response = [
-                    'success' => false,
-                    'message' => "User with username '{$username}' not found."
-                ];
+                throw new \Exception("User with username '{$username}' not found");
             }
 
             return $response[0];
