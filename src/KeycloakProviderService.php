@@ -1282,7 +1282,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                     'username' => $user['username'],
                     'firstName' => $user['firstName'] ?? null,
                     'lastName' => $user['lastName'] ?? null,
-                    'email' => $user['email'],
+                    'email' => $user['email'] ?? null,
                     'emailVerified' => $user['emailVerified'],
                     'phoneNumber' => isset($user['attributes']) ?
                         ($user['attributes']['phoneNumber'] ?? $user['attributes']['PhoneNumber'] ?? null)
