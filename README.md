@@ -23,8 +23,42 @@ This package provides integration between Laravel and Keycloak, enabling Single 
    php artisan vendor:publish --tag=keycloak-config
    ```
    This will publish a config file at `config/keycloak.php`. Adjust the settings to match your Keycloak realm, tokens, etc.
+3. Add configuration to `config/services.php`
+   ```php
+   'keycloak' => [
+     'client_id' => env('KEYCLOAK_CLIENT_ID'),
+     'client_secret' => env('KEYCLOAK_CLIENT_SECRET'),
+     'redirect' => env('KEYCLOAK_REDIRECT_URI'),
+     'base_url' => env('KEYCLOAK_BASE_URL'),   // Specify your keycloak server URL here
+     'realms' => env('KEYCLOAK_REALM')         // Specify your keycloak realm
+   ],
+   ```
+4. Add provider event listener
+   
+   Laravel 11+
 
-4. Set up the fields for storing tokens in your User model:
+   In Laravel 11, the default EventServiceProvider provider was removed. Instead, add the listener using the listen method on the Event facade, in your AppServiceProvider boot method.
+
+   - Note: You do not need to add anything for the built-in socialite providers unless you override them with your own providers.
+   ```php
+   Event::listen(function (\SocialiteProviders\Manager\SocialiteWasCalled $event) {
+       $event->extendSocialite('keycloak', \SocialiteProviders\Keycloak\Provider::class);
+   });
+   ```
+
+   Laravel 10 or below
+   Configure the package's listener to listen for `SocialiteWasCalled` events.
+   Add the event to your listen[] array in `app/Providers/EventServiceProvider`.
+
+   ```php
+   protected $listen = [
+       \SocialiteProviders\Manager\SocialiteWasCalled::class => [
+           // ... other providers
+           \SocialiteProviders\Keycloak\KeycloakExtendSocialite::class.'@handle',
+       ],
+   ];
+   ```
+6. Set up the fields for storing tokens in your User model:
    ```php
    // in your database migration
    Schema::table('users', function (Blueprint $table) {
