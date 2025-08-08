@@ -4,6 +4,7 @@ namespace Edoaurahman\KeycloakSso;
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Laravel\Socialite\Two\AbstractProvider;
 use Laravel\Socialite\Two\ProviderInterface;
@@ -71,6 +72,48 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
      * @var string
      */
     protected $apiUrl;
+
+    /**
+     * Decode JWT token without verification
+     * 
+     * @param string $token
+     * @return array
+     * @throws \Exception
+     */
+    private function decodeJwt($token): array
+    {
+        if (empty($token)) {
+            throw new \Exception('Token cannot be empty');
+        }
+
+        $parts = explode('.', $token);
+
+        if (count($parts) !== 3) {
+            throw new \Exception('Invalid JWT token format');
+        }
+
+        // Decode the payload (second part)
+        $payload = $parts[1];
+
+        // Add padding if needed
+        $payload = str_pad($payload, strlen($payload) % 4, '=', STR_PAD_RIGHT);
+
+        // Base64 decode
+        $decoded = base64_decode(strtr($payload, '-_', '+/'));
+
+        if ($decoded === false) {
+            throw new \Exception('Failed to decode JWT payload');
+        }
+
+        // Parse JSON
+        $data = json_decode($decoded, true);
+
+        if ($data === null) {
+            throw new \Exception('Failed to parse JWT payload as JSON');
+        }
+
+        return $data;
+    }
 
     /**
      * Create a new provider instance.
@@ -1181,30 +1224,150 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
     {
         $token = Session::get('access_token') ?? (Auth::user() ? Auth::user()->{$this->tokenField} : null);
 
-        try {
-            $response = $this->getHttpClient()->post(
-                "{$this->baseUrl}realms/{$this->realm}/protocol/openid-connect/token/introspect",
-                [
-                    'headers' => [
-                        'Accept' => 'application/json',
-                        'Content' => 'application/x-www-form-urlencoded',
-                    ],
-                    'form_params' => [
-                        'client_id' => $this->clientId,
-                        'client_secret' => $this->clientSecret,
-                        'token' => $token,
-                    ],
-                ]
-            );
-
-            $response = json_decode($response->getBody(), true);
-
-            $isExpired = !($response['active'] ?? false);
-
-            return $isExpired;
-        } catch (ClientException $e) {
-            throw $e;
+        // No token found, consider it expired
+        if (!$token) {
+            return true;
         }
+
+        // First, check expiration time from JWT payload
+        try {
+            $decodedToken = $this->decodeJwt($token);
+            $expiration = $decodedToken['exp'] ?? 0;
+
+            // If token is expired based on exp claim, try to refresh it first
+            if ($expiration > 0 && time() >= $expiration) {
+                Log::debug('Token expired based on exp claim, attempting to refresh');
+
+                // Try to refresh the token
+                $refreshToken = Session::get($this->refreshTokenSessionKey) ?? (Auth::user() ? Auth::user()->{$this->refreshTokenField} : null);
+                if ($refreshToken) {
+                    $newToken = $this->refreshToken($refreshToken);
+                    if ($newToken) {
+                        Log::info('Token successfully refreshed');
+                        return false; // Token is now valid after refresh
+                    } else {
+                        Log::warning('Failed to refresh expired token');
+                        return true; // Refresh failed, token is expired
+                    }
+                } else {
+                    Log::warning('No refresh token available for expired access token');
+                    return true; // No refresh token, consider expired
+                }
+            }
+        } catch (\Exception $e) {
+            Log::warning('Failed to decode JWT token: ' . $e->getMessage());
+            // If we can't decode the token, consider it expired
+            return true;
+        }
+
+        // Retry mechanism for introspection
+        $maxRetries = 3;
+        $attempt = 0;
+
+        while ($attempt < $maxRetries) {
+            try {
+                // Get the current token (might have been refreshed above)
+                $currentToken = Session::get('access_token') ?? (Auth::user() ? Auth::user()->{$this->tokenField} : null);
+
+                $response = $this->getHttpClient()->post(
+                    "{$this->baseUrl}realms/{$this->realm}/protocol/openid-connect/token/introspect",
+                    [
+                        'headers' => [
+                            'Accept' => 'application/json',
+                            'Content-Type' => 'application/x-www-form-urlencoded',
+                        ],
+                        'form_params' => [
+                            'client_id' => $this->clientId,
+                            'client_secret' => $this->clientSecret,
+                            'token' => $currentToken,
+                        ],
+                        'timeout' => 30, // Add timeout
+                        'connect_timeout' => 10, // Add connection timeout
+                    ]
+                );
+
+                $responseData = json_decode($response->getBody(), true);
+                $isExpired = !($responseData['active'] ?? false);
+
+                // If token is expired according to introspection, try to refresh
+                if ($isExpired) {
+                    Log::debug('Token expired according to introspection, attempting to refresh');
+
+                    $refreshToken = Session::get($this->refreshTokenSessionKey) ?? (Auth::user() ? Auth::user()->{$this->refreshTokenField} : null);
+                    if ($refreshToken) {
+                        $newToken = $this->refreshToken($refreshToken);
+                        if ($newToken) {
+                            Log::info('Token successfully refreshed after introspection');
+                            return false; // Token is now valid after refresh
+                        } else {
+                            Log::warning('Failed to refresh token after introspection');
+                            return true; // Refresh failed, token is expired
+                        }
+                    } else {
+                        Log::warning('No refresh token available after introspection');
+                        return true; // No refresh token, consider expired
+                    }
+                }
+
+                return $isExpired;
+
+            } catch (ClientException $e) {
+                $attempt++;
+                Log::warning("Token introspection attempt {$attempt} failed: " . $e->getMessage());
+
+                // If it's the last attempt, check the error type
+                if ($attempt >= $maxRetries) {
+                    $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 0;
+
+                    // If it's a 401 (Unauthorized), try to refresh the token
+                    if ($statusCode === 401) {
+                        Log::info('Token introspection returned 401, attempting to refresh token');
+
+                        $refreshToken = Session::get($this->refreshTokenSessionKey) ?? (Auth::user() ? Auth::user()->{$this->refreshTokenField} : null);
+                        if ($refreshToken) {
+                            $newToken = $this->refreshToken($refreshToken);
+                            if ($newToken) {
+                                Log::info('Token successfully refreshed after 401 error');
+                                return false; // Token is now valid after refresh
+                            } else {
+                                Log::warning('Failed to refresh token after 401 error');
+                                return true; // Refresh failed, token is expired
+                            }
+                        } else {
+                            Log::warning('No refresh token available after 401 error');
+                            return true; // No refresh token, consider expired
+                        }
+                    }
+
+                    // For other errors (network issues, server errors, etc.), 
+                    // and token is not expired based on JWT exp claim, return false
+                    Log::error("All introspection attempts failed with status {$statusCode}, but token not expired based on exp claim");
+                    return false;
+                }
+
+                // Wait before retry (exponential backoff)
+                sleep(pow(2, $attempt - 1));
+
+            } catch (\Exception $e) {
+                $attempt++;
+                Log::warning("Token introspection attempt {$attempt} failed with exception: " . $e->getMessage());
+
+                // If it's the last attempt and not a client exception
+                if ($attempt >= $maxRetries) {
+                    // For network errors, curl errors, etc., if token is not expired 
+                    // based on JWT exp claim, return false
+                    Log::error("All introspection attempts failed with exception, but token not expired based on exp claim");
+                    return false;
+                }
+
+                // Wait before retry (exponential backoff)
+                sleep(pow(2, $attempt - 1));
+            }
+        }
+
+        // This should never be reached, but just in case
+        Log::error('Unexpected end of isTokenExpired method');
+        return false;
     }
 
     /**
