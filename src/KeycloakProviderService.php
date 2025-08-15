@@ -287,15 +287,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                 'expires_in' => $data['expires_in'],
                 'token_expiration' => Carbon::now()->addSeconds($data['expires_in'])->timestamp,
             ]);
-            // update user's refresh token
-            $user = Auth::user();
-            if (method_exists($user, 'forceFill') && method_exists($user, 'save')) {
-                $user->forceFill([
-                    $this->tokenField => $data['access_token'],
-                    $this->refreshTokenField => $data['refresh_token'] ?? $refreshToken,
-                ])->save();
-            }
-
+            
             return $data['access_token'];
         } catch (\Exception $e) {
             // If refresh token is invalid or expired, redirect to login
