@@ -252,16 +252,21 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
     public function refreshToken($refreshToken = null): ?string
     {
         if (!$refreshToken) {
-            $user = Auth::user();
-            if (!$user || !isset($user->{$this->refreshTokenField})) {
-                return null;
+            // First try to get refresh token from session
+            $refreshToken = Session::get($this->refreshTokenSessionKey);
+            
+            // If not found in session, try to get from user model
+            if (!$refreshToken) {
+                $user = Auth::user();
+                if ($user && isset($user->{$this->refreshTokenField})) {
+                    $refreshToken = $user->{$this->refreshTokenField};
+                }
             }
-            $refreshToken = $user->{$this->refreshTokenField};
+            
+            // If still no refresh token found, return null
             if (!$refreshToken) {
                 return null;
             }
-        } else if (!Auth::user() || !isset(Auth::user()->{$this->refreshTokenField})) {
-            return null;
         }
 
         try {
