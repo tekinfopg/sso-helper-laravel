@@ -312,12 +312,12 @@ interface KeycloakProviderServiceInterface
      * Retrieves the Keycloak client roles assigned to a specific user.
      * 
      * @param string $userUuid
-     * 
+     * @param bool $includeCompositeRole
      * @return array
      * An array containing the response data.
      * 
      */
-    public function getUserClientRoles($userUuid): array;
+    public function getUserClientRoles($userUuid, bool $includeCompositeRole = false): array;
 
     /**
      * Retrieves a list of users assigned to a specific client role.
