@@ -1401,7 +1401,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                     ]
                 );
                 $responseComposite = json_decode($responseComposite->getBody(), true);
-                $responseComposite = collect($responseComposite)->where('client', operator: $this->clientId)->values()->toArray();
+                $responseComposite = collect($responseComposite)->where('client', $this->clientId)->values()->toArray();
                 foreach ($responseComposite as $role) {
                     $clientRoles[] = [
                         'name' => $role['role'],
