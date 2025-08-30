@@ -1369,14 +1369,14 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
 
     /**
      * Retrieves the Keycloak client roles assigned to a specific user.
-     * 
      * @param string $userUuid
+     * @param bool $includeCompositeRole
      * 
      * @return array
      * An array containing the response data.
      * 
      */
-    public function getUserClientRoles($userUuid): array
+    public function getUserClientRoles($userUuid, bool $includeCompositeRole = false): array
     {
         $clientRoles = [];
 
@@ -1391,7 +1391,24 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
             );
 
             $response = json_decode($response->getBody(), true);
-
+            if($includeCompositeRole){
+                $responseComposite = $this->getHttpClient()->get(
+                    "{$this->apiUrl}admin/realms/{$this->realm}/users/{$userUuid}/role-mappings/clients/{$this->clientUuid}/composite?briefRepresentation=true",
+                    [
+                        'headers' => [
+                            'Accept' => 'application/json',
+                        ],
+                    ]
+                );
+                $responseComposite = json_decode($responseComposite->getBody(), true);
+                $responseComposite = collect($responseComposite)->where('client', operator: $this->clientId)->values()->toArray();
+                foreach ($responseComposite as $role) {
+                    $clientRoles[] = [
+                        'name' => $role['role'],
+                        'clientId' => $role['id']
+                    ];
+                }
+            }
             foreach ($response as $role) {
                 if ($role['name'] !== 'uma_protection') {
                     $clientRoles[] = [
@@ -1400,7 +1417,8 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                     ];
                 }
             }
-
+            // remove duplicate
+            $clientRoles = array_unique($clientRoles, SORT_REGULAR);
             return $clientRoles;
         } catch (ClientException $e) {
             throw $e;
