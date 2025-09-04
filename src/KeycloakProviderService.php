@@ -254,7 +254,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
         if (!$refreshToken) {
             // First try to get refresh token from session
             $refreshToken = Session::get($this->refreshTokenSessionKey);
-            
+
             // If not found in session, try to get from user model
             if (!$refreshToken) {
                 $user = Auth::user();
@@ -262,7 +262,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                     $refreshToken = $user->{$this->refreshTokenField};
                 }
             }
-            
+
             // If still no refresh token found, return null
             if (!$refreshToken) {
                 return null;
@@ -287,7 +287,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                 'expires_in' => $data['expires_in'],
                 'token_expiration' => Carbon::now()->addSeconds($data['expires_in'])->timestamp,
             ]);
-            
+
             return $data['access_token'];
         } catch (\Exception $e) {
             // If refresh token is invalid or expired, redirect to login
@@ -799,8 +799,9 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
         $token = Session::get($this->tokenSessionKey) ?? (Auth::user() ? Auth::user()->{$this->tokenField} : null);
 
         try {
+            $url = "{$this->baseUrl}realms/{$this->realm}/protocol/openid-connect/userinfo";
             $response = $this->getHttpClient()->get(
-                "{$this->baseUrl}realms/{$this->realm}/account",
+                $url,
                 [
                     'headers' => [
                         'Accept' => 'application/json',
@@ -812,19 +813,15 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
             $response = json_decode($response->getBody(), true);
 
             $profile = [
-                'id' => $response['id'] ?? null,
-                'username' => $response['username'] ?? null,
-                'firstName' => $response['firstName'] ?? null,
-                'lastName' => $response['lastName'] ?? null,
+                'id' => $response['sub'] ?? null,
+                'username' => $response['preferred_username'] ?? null,
+                'firstName' => $response['given_name'] ?? null,
+                'lastName' => $response['family_name'] ?? null,
                 'email' => $response['email'] ?? null,
-                'emailVerified' => $response['emailVerified'] ?? null,
-                'phoneNumber' => isset($response['attributes']) ?
-                    ($response['attributes']['phoneNumber'] ?? $response['attributes']['PhoneNumber'] ?? null)
-                    : null,
-                'nik' => isset($response['attributes']) ?
-                    ($response['attributes']['nik'] ?? $response['attributes']['NIK'] ?? null) : null,
-                'department' => isset($response['attributes']) ?
-                    ($response['attributes']['department'] ?? $response['attributes']['Department'] ?? null) : null,
+                'emailVerified' => $response['email_verified'] ?? null,
+                'phoneNumber' => $response['phoneNumber'] ?? null,
+                'nik' => $response['nik'] ?? null,
+                'department' => $response['department'] ?? null,
             ];
 
             return $profile;
@@ -1391,7 +1388,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
             );
 
             $response = json_decode($response->getBody(), true);
-            if($includeCompositeRole){
+            if ($includeCompositeRole) {
                 $responseComposite = $this->getHttpClient()->get(
                     "{$this->apiUrl}admin/realms/{$this->realm}/users/{$userUuid}/role-mappings/clients/{$this->clientUuid}/composite?briefRepresentation=true",
                     [
