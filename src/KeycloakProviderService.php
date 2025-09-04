@@ -1390,7 +1390,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
             $response = json_decode($response->getBody(), true);
             if ($includeCompositeRole) {
                 $responseComposite = $this->getHttpClient()->get(
-                    "{$this->apiUrl}admin/realms/{$this->realm}/users/{$userUuid}/role-mappings/clients/{$this->clientUuid}/composite?briefRepresentation=true",
+                    "{$this->apiUrl}admin/realms/{$this->realm}/ui-ext/effective-roles/users/{$userUuid}?first=0&max=-1",
                     [
                         'headers' => [
                             'Accept' => 'application/json',
