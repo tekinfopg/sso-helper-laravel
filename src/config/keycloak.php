@@ -11,4 +11,8 @@ return [
     'refresh_token_field' => 'keycloak_refresh_token',
     'session_access_token_field' => 'access_token',
     'session_refresh_token_field' => 'refresh_token',
+    
+    // HTTP timeout settings (in seconds)
+    'timeout' => env('KEYCLOAK_TIMEOUT', 30),
+    'connect_timeout' => env('KEYCLOAK_CONNECT_TIMEOUT', 10),
 ];

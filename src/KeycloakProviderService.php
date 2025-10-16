@@ -46,6 +46,20 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
     protected $refreshTokenSessionKey;
 
     /**
+     * The timeout for HTTP requests (in seconds).
+     *
+     * @var int
+     */
+    protected $timeout;
+
+    /**
+     * The connection timeout for HTTP requests (in seconds).
+     *
+     * @var int
+     */
+    protected $connectTimeout;
+
+    /**
      * The unique identifier (UUID) of the Keycloak client.
      *
      * @var string
@@ -139,6 +153,8 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
         $this->clientId = Config::get('keycloak.client_id');
         $this->clientSecret = Config::get('keycloak.client_secret');
         $this->apiUrl = Config::get('keycloak.api_url');
+        $this->timeout = Config::get('keycloak.timeout', 30);
+        $this->connectTimeout = Config::get('keycloak.connect_timeout', 10);
     }
 
 
@@ -277,6 +293,8 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                     'client_id' => $this->clientId,
                     'client_secret' => $this->clientSecret,
                 ],
+                'timeout' => $this->timeout,
+                'connect_timeout' => $this->connectTimeout,
             ]);
 
             $data = json_decode($response->getBody(), true);
@@ -1275,8 +1293,8 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                             'client_secret' => $this->clientSecret,
                             'token' => $currentToken,
                         ],
-                        'timeout' => 30, // Add timeout
-                        'connect_timeout' => 10, // Add connection timeout
+                        'timeout' => $this->timeout,
+                        'connect_timeout' => $this->connectTimeout,
                     ]
                 );
 
@@ -1539,6 +1557,8 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                         'client_secret' => $this->clientSecret,
                         'token' => $token,
                     ],
+                    'timeout' => $this->timeout,
+                    'connect_timeout' => $this->connectTimeout,
                 ]
             );
 
