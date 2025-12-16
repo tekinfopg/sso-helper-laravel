@@ -9,6 +9,48 @@ This package provides integration between Laravel and Keycloak, enabling Single 
 
 ## Installation
 
+### Quick Installation (Recommended)
+
+1. Require the package:
+   ```bash
+   composer require tekinfopg/sso-helper-laravel
+   ```
+
+2. Run the installation wizard:
+   ```bash
+   php artisan keycloak:install
+   ```
+
+   The wizard will guide you through:
+   - Publishing configuration files
+   - Updating `config/services.php`
+   - Adding event listener (automatically detects Laravel version)
+   - Optionally updating `.env` file with your Keycloak credentials
+
+   **Available options:**
+   - `--all`: Auto-publish all files and update .env (non-interactive)
+   - `--env`: Update .env file automatically
+   - `--force`: Overwrite existing files
+
+3. Run migrations to add Keycloak token fields:
+   ```bash
+   php artisan migrate
+   ```
+
+4. Update your User model's `$fillable` array:
+   ```php
+   protected $fillable = [
+       // ...
+       'keycloak_token',
+       'keycloak_refresh_token',
+   ];
+   ```
+
+### Manual Installation
+
+<details>
+<summary>Click to expand manual installation steps</summary>
+
 1. Require the package:
    ```bash
    composer require tekinfopg/sso-helper-laravel
@@ -18,11 +60,8 @@ This package provides integration between Laravel and Keycloak, enabling Single 
    ```bash
    php artisan vendor:publish --provider="Edoaurahman\\KeycloakSso\\KeycloakServiceProvider" --tag=keycloak-config
    ```
-   or
-   ```bash
-   php artisan vendor:publish --tag=keycloak-config
-   ```
    This will publish a config file at `config/keycloak.php`. Adjust the settings to match your Keycloak realm, tokens, etc.
+
 3. Add configuration to `config/services.php`
    ```php
    'keycloak' => [
@@ -33,22 +72,25 @@ This package provides integration between Laravel and Keycloak, enabling Single 
      'realms' => env('KEYCLOAK_REALM')         // Specify your keycloak realm
    ],
    ```
+
 4. Add provider event listener
    
-   Laravel 11+
+   **Laravel 11+**
 
-   In Laravel 11, the default EventServiceProvider provider was removed. Instead, add the listener using the listen method on the Event facade, in your AppServiceProvider boot method.
+   In Laravel 11, the default EventServiceProvider provider was removed. Instead, add the listener using the listen method on the Event facade, in your `AppServiceProvider` boot method.
 
-   - Note: You do not need to add anything for the built-in socialite providers unless you override them with your own providers.
    ```php
+   use Illuminate\Support\Facades\Event;
+   
    Event::listen(function (\SocialiteProviders\Manager\SocialiteWasCalled $event) {
        $event->extendSocialite('keycloak', \SocialiteProviders\Keycloak\Provider::class);
    });
    ```
 
-   Laravel 10 or below
+   **Laravel 10 or below**
+
    Configure the package's listener to listen for `SocialiteWasCalled` events.
-   Add the event to your listen[] array in `app/Providers/EventServiceProvider`.
+   Add the event to your `$listen` array in `app/Providers/EventServiceProvider.php`.
 
    ```php
    protected $listen = [
@@ -58,12 +100,13 @@ This package provides integration between Laravel and Keycloak, enabling Single 
        ],
    ];
    ```
-6. Set up the fields for storing tokens in your User model:
+
+5. Set up the fields for storing tokens in your User model:
    ```php
    // in your database migration
    Schema::table('users', function (Blueprint $table) {
-       $table->string('keycloak_token')->nullable();
-       $table->string('keycloak_refresh_token')->nullable();
+       $table->text('keycloak_token')->nullable();
+       $table->text('keycloak_refresh_token')->nullable();
    });
 
    // in your User model
@@ -73,6 +116,8 @@ This package provides integration between Laravel and Keycloak, enabling Single 
        'keycloak_refresh_token',
    ];
    ```
+
+</details>
 
 ## Usage
 
