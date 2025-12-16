@@ -15,7 +15,7 @@ class InstallCommand extends Command
      */
     protected $signature = 'keycloak:install 
                             {--force : Overwrite existing files}
-                            {--env : Update .env file}
+                            {--update-env : Update .env file}
                             {--all : Publish all files and update .env}';
 
     /**
@@ -45,8 +45,8 @@ class InstallCommand extends Command
         // Step 3: Add event listener based on Laravel version
         $this->addEventListener();
 
-        // Step 4: Update .env file (if --env or --all flag is set or user confirms)
-        if ($all || $this->option('env') || $this->confirm('Do you want to update .env file with Keycloak configuration?', true)) {
+        // Step 4: Update .env file (if --update-env or --all flag is set or user confirms)
+        if ($all || $this->option('update-env') || $this->confirm('Do you want to update .env file with Keycloak configuration?', true)) {
             $this->updateEnvFile();
         }
 

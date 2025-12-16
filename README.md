@@ -29,7 +29,7 @@ This package provides integration between Laravel and Keycloak, enabling Single 
 
    **Available options:**
    - `--all`: Auto-publish all files and update .env (non-interactive)
-   - `--env`: Update .env file automatically
+   - `--update-env`: Update .env file automatically
    - `--force`: Overwrite existing files
 
 3. Run migrations to add Keycloak token fields:
