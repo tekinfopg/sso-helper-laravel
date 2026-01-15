@@ -13,7 +13,7 @@ This package provides integration between Laravel and Keycloak, enabling Single 
 
 1. Require the package:
    ```bash
-   composer require tekinfopg/sso-helper-laravel
+   composer require tekinfopg/sso-helper-laravel:dev-installation-wizard
    ```
 
 2. Run the installation wizard:
