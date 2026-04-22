@@ -44,5 +44,12 @@ class KeycloakServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__ . '/KeycloakProviderService.php' => $this->app->basePath('app/Providers/KeycloakProviderService.php'),
         ], 'keycloak-provider');
+
+        // register commands
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                \Edoaurahman\KeycloakSso\Console\Commands\InstallCommand::class,
+            ]);
+        }
     }
 }
