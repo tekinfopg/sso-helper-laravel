@@ -5,6 +5,7 @@ return [
     'redirect' => env('KEYCLOAK_REDIRECT_URI'),
     'base_url' => env('KEYCLOAK_BASE_URL'),         // Specify your keycloak server URL here
     'realms' => env('KEYCLOAK_REALM'),              // Specify your keycloak realm
+    'api_key' => env('KEYCLOAK_API_KEY'),
     'token_field' => 'keycloak_token',                   // Specify the field name for storing the Keycloak token
     'refresh_token_field' => 'keycloak_refresh_token',   // Specify the field name for storing the Keycloak refresh token
     'session_access_token_field' => 'access_token',           // Specify the field name for storing the Keycloak session token
