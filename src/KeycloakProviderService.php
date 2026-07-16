@@ -88,6 +88,13 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
     protected $apiUrl;
 
     /**
+     * The API key sent with every Keycloak request (X-API-KEY header).
+     *
+     * @var string
+     */
+    protected $apiKey;
+
+    /**
      * Decode JWT token without verification
      * 
      * @param string $token
@@ -153,8 +160,37 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
         $this->clientId = Config::get('keycloak.client_id');
         $this->clientSecret = Config::get('keycloak.client_secret');
         $this->apiUrl = Config::get('keycloak.api_url');
+        $this->apiKey = Config::get('keycloak.api_key');
+
+        if (empty($this->apiKey)) {
+            throw new \RuntimeException('KEYCLOAK_API_KEY is not set. Add it to your .env and config/keycloak.php (api_key).');
+        }
+
         $this->timeout = Config::get('keycloak.timeout', 30);
         $this->connectTimeout = Config::get('keycloak.connect_timeout', 10);
+    }
+
+    /**
+     * Get a Guzzle HTTP client with the API key header applied to every request.
+     *
+     * Overrides Socialite's getHttpClient so the X-API-KEY header is sent on all
+     * Keycloak calls (userinfo, token, and admin API) without touching each call site.
+     *
+     * @return \GuzzleHttp\Client
+     */
+    protected function getHttpClient()
+    {
+        if (is_null($this->httpClient)) {
+            $config = $this->guzzle;
+            $config['headers'] = array_merge(
+                $config['headers'] ?? [],
+                ['X-API-KEY' => $this->apiKey]
+            );
+
+            $this->httpClient = new \GuzzleHttp\Client($config);
+        }
+
+        return $this->httpClient;
     }
 
 

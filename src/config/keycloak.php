@@ -7,6 +7,7 @@ return [
     'base_url' => env('KEYCLOAK_BASE_URL'),
     'realms' => env('KEYCLOAK_REALM'),
     'api_url' => env('KEYCLOAK_API_URL'),
+    'api_key' => env('KEYCLOAK_API_KEY'),
     'token_field' => 'keycloak_token',
     'refresh_token_field' => 'keycloak_refresh_token',
     'session_access_token_field' => 'access_token',

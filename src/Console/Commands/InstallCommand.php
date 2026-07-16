@@ -120,6 +120,7 @@ class InstallCommand extends Command
             . "        'redirect' => env('KEYCLOAK_REDIRECT_URI'),\n"
             . "        'base_url' => env('KEYCLOAK_BASE_URL'),\n"
             . "        'realms' => env('KEYCLOAK_REALM'),\n"
+            . "        'api_key' => env('KEYCLOAK_API_KEY'),\n"
             . "    ],\n";
 
         // Find the last occurrence of ];
@@ -327,6 +328,7 @@ class InstallCommand extends Command
             'KEYCLOAK_BASE_URL' => $this->ask('Keycloak Base URL', $this->getEnvValue($envContent, 'KEYCLOAK_BASE_URL', 'https://keycloak.example.com/')),
             'KEYCLOAK_REALM' => $this->ask('Keycloak Realm', $this->getEnvValue($envContent, 'KEYCLOAK_REALM', 'master')),
             'KEYCLOAK_API_URL' => $this->ask('Keycloak API URL', $this->getEnvValue($envContent, 'KEYCLOAK_API_URL', 'https://keycloak.example.com/')),
+            'KEYCLOAK_API_KEY' => $this->askRequired('Keycloak API Key (required)', $this->getEnvValue($envContent, 'KEYCLOAK_API_KEY', '')),
         ];
 
         // Update or append to .env
@@ -338,6 +340,21 @@ class InstallCommand extends Command
 
         $this->info('✓ .env file updated successfully');
         $this->newLine();
+    }
+
+    /**
+     * Ask for a value that must not be empty. Repeats until one is given.
+     */
+    protected function askRequired($question, $default = '')
+    {
+        do {
+            $value = $this->ask($question, $default);
+            if (empty(trim((string) $value))) {
+                $this->error('✗ This value is required and cannot be empty.');
+            }
+        } while (empty(trim((string) $value)));
+
+        return $value;
     }
 
     /**
