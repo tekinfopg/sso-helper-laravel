@@ -6,6 +6,7 @@ return [
     'redirect' => env('KEYCLOAK_REDIRECT_URI'),
     'base_url' => env('KEYCLOAK_BASE_URL'),
     'realms' => env('KEYCLOAK_REALM'),
+    'api_key' => env('KEYCLOAK_API_KEY'),
     'api_url' => env('KEYCLOAK_API_URL'),
     'token_field' => 'keycloak_token',
     'refresh_token_field' => 'keycloak_refresh_token',
