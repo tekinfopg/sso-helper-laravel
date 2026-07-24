@@ -240,6 +240,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                     'headers' => [
                         'Accept' => 'application/json',
                         'Authorization' => "Bearer {$token}",
+                        'X-API-KEY' => $this->apiKey,
                     ],
                 ]
             );
@@ -338,6 +339,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                 'headers' => [
                     'Accept' => 'application/json',
                     'Authorization' => "Bearer {$token}",
+                    'X-API-KEY' => $this->apiKey,
                 ],
                 'json' => $data,
             ]);
@@ -567,6 +569,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                     'headers' => [
                         'Accept' => 'application/json',
                         'Content-Type' => 'application/json',
+                        'X-API-KEY' => $this->apiKey,
                     ],
                     'json' => $data,
                 ]
@@ -654,6 +657,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                     'headers' => [
                         'Accept' => 'application/json',
                         'Authorization' => "Bearer {$token}",
+                        'X-API-KEY' => $this->apiKey,
                     ],
                 ]
             );
@@ -692,6 +696,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                     'headers' => [
                         'Accept' => 'application/json',
                         'Authorization' => "Bearer {$token}",
+                        'X-API-KEY' => $this->apiKey,
                     ],
                 ]
             );
@@ -730,6 +735,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                     'headers' => [
                         'Accept' => 'application/json',
                         'Authorization' => "Bearer {$token}",
+                        'X-API-KEY' => $this->apiKey,
                     ],
                 ]
             );
@@ -760,6 +766,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                     'headers' => [
                         'Accept' => 'application/json',
                         'Authorization' => "Bearer {$token}",
+                        'X-API-KEY' => $this->apiKey,
                     ],
                 ]
             );
@@ -824,6 +831,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                     'headers' => [
                         'Accept' => 'application/json',
                         'Authorization' => "Bearer {$token}",
+                        'X-API-KEY' => $this->apiKey,
                     ],
                 ]
             );
@@ -876,6 +884,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                     'headers' => [
                         'Accept' => 'application/json',
                         'Authorization' => "Bearer {$token}",
+                        'X-API-KEY' => $this->apiKey,
                     ],
                 ]
             );
@@ -929,6 +938,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                         'headers' => [
                             'Accept' => 'application/json',
                             'Content-Type' => 'application/json',
+                            'X-API-KEY' => $this->apiKey,
                         ],
                         'json' => [
                             "type" => "password",
@@ -987,6 +997,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                         'Accept' => 'application/json',
                         'Content-Type' => 'application/json',
                         'Authorization' => "Bearer {$token}",
+                        'X-API-KEY' => $this->apiKey,
                     ],
                     'json' => $data
                 ]
@@ -1042,6 +1053,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                     'headers' => [
                         'Accept' => 'application/json',
                         'Authorization' => "Bearer {$token}",
+                        'X-API-KEY' => $this->apiKey,
                     ],
                 ]
             );
@@ -1092,6 +1104,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                     'headers' => [
                         'Accept' => 'application/json',
                         'Authorization' => "Bearer {$token}",
+                        'X-API-KEY' => $this->apiKey,
                     ],
                 ]
             );
@@ -1142,6 +1155,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                     [
                         'headers' => [
                             'Accept' => 'application/json',
+                            'X-API-KEY' => $this->apiKey,
                         ],
                     ]
                 );
@@ -1194,6 +1208,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                     [
                         'headers' => [
                             'Accept' => 'application/json',
+                            'X-API-KEY' => $this->apiKey,
                         ],
                     ]
                 );
@@ -1287,6 +1302,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                         'headers' => [
                             'Accept' => 'application/json',
                             'Content-Type' => 'application/x-www-form-urlencoded',
+                            'X-API-KEY' => $this->apiKey,
                         ],
                         'form_params' => [
                             'client_id' => $this->clientId,
@@ -1401,6 +1417,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                 [
                     'headers' => [
                         'Accept' => 'application/json',
+                        'X-API-KEY' => $this->apiKey,
                     ],
                     'query' => [
                         'first' => 0,
@@ -1463,6 +1480,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                 [
                     'headers' => [
                         'Accept' => 'application/json',
+                        'X-API-KEY' => $this->apiKey,
                     ],
                     'query' => [
                         'first' => 0,
@@ -1516,6 +1534,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                 [
                     'headers' => [
                         'Accept' => 'application/json',
+                        'X-API-KEY' => $this->apiKey,
                     ],
                 ]
             );
@@ -1559,6 +1578,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                     'headers' => [
                         'Accept' => 'application/json',
                         'Content-Type' => 'application/x-www-form-urlencoded',
+                        'X-API-KEY' => $this->apiKey,
                     ],
                     'form_params' => [
                         'client_id' => $this->clientId,
@@ -1591,6 +1611,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                 [
                     'headers' => [
                         'Accept' => 'application/json',
+                        'X-API-KEY' => $this->apiKey,
                     ],
                 ]
             );
@@ -1615,6 +1636,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                 [
                     'headers' => [
                         'Accept' => 'application/json',
+                        'X-API-KEY' => $this->apiKey,
                     ],
                 ]
             );
@@ -1681,6 +1703,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                     'headers' => [
                         'Accept' => 'application/json',
                         'Authorization' => "Bearer " . (Session::get($this->tokenSessionKey) ?? Auth::user()->{$this->tokenField}),
+                        'X-API-KEY' => $this->apiKey,
                     ],
                     'query' => [
                         'username' => $username,
