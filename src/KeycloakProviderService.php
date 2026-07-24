@@ -312,7 +312,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
      */
     public function getClientList(): array
     {
-        return $this->request('GET', "{$this->baseUrl}admin/realms/{$this->realm}/clients");
+        return $this->request('GET', "{$this->baseUrl}admin/realms/{$this->realm}/clients?first=0&max=-1");
     }
 
 
@@ -342,7 +342,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
      */
     public function getUserList(): array
     {
-        return $this->request('GET', "{$this->baseUrl}admin/realms/{$this->realm}/users");
+        return $this->request('GET', "{$this->baseUrl}admin/realms/{$this->realm}/users?first=0&max=-1");
     }
 
     /**
@@ -421,7 +421,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
      */
     public function getUserRoles($id): array
     {
-        return $this->request('GET', "{$this->baseUrl}admin/realms/{$this->realm}/users/{$id}/role-mappings");
+        return $this->request('GET', "{$this->baseUrl}admin/realms/{$this->realm}/users/{$id}/role-mappings?first=0&max=-1");
     }
 
     /**
@@ -434,7 +434,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
 
     public function getRoles($clientUuid): array
     {
-        return $this->request('GET', "{$this->baseUrl}admin/realms/{$this->realm}/clients/{$clientUuid}/roles");
+        return $this->request('GET', "{$this->baseUrl}admin/realms/{$this->realm}/clients/{$clientUuid}/roles?first=0&max=-1");
     }
 
     /**
@@ -446,7 +446,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
      */
     public function getUsersWithRole($roleName): array
     {
-        return $this->request('GET', "{$this->baseUrl}admin/realms/{$this->realm}/roles/{$roleName}/users");
+        return $this->request('GET', "{$this->baseUrl}admin/realms/{$this->realm}/roles/{$roleName}/users?first=0&max=-1");
     }
 
     /**
@@ -1152,6 +1152,10 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                 [
                     'headers' => [
                         'Accept' => 'application/json',
+                    ],
+                    'query' => [
+                        'first' => 0,
+                        'max' => -1,
                     ],
                 ]
             );
