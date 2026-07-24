@@ -390,7 +390,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
      */
     public function getClientList(): array
     {
-        return $this->request('GET', "{$this->apiUrl}admin/realms/{$this->realm}/clients");
+        return $this->request('GET', "{$this->apiUrl}admin/realms/{$this->realm}/clients?first=0&max=-1");
     }
 
 
@@ -420,7 +420,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
      */
     public function getUserList(): array
     {
-        return $this->request('GET', "{$this->apiUrl}admin/realms/{$this->realm}/users");
+        return $this->request('GET', "{$this->apiUrl}admin/realms/{$this->realm}/users?first=0&max=-1");
     }
 
     /**
@@ -498,7 +498,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
      */
     public function getUserRoles($userUuid): array
     {
-        return $this->request('GET', "{$this->apiUrl}admin/realms/{$this->realm}/users/{$userUuid}/role-mappings");
+        return $this->request('GET', "{$this->apiUrl}admin/realms/{$this->realm}/users/{$userUuid}/role-mappings?first=0&max=-1");
     }
 
     /**
@@ -510,7 +510,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
 
     public function getClientRoles(): array
     {
-        return $this->request('GET', "{$this->apiUrl}admin/realms/{$this->realm}/clients/{$this->clientUuid}/roles");
+        return $this->request('GET', "{$this->apiUrl}admin/realms/{$this->realm}/clients/{$this->clientUuid}/roles?first=0&max=-1");
     }
 
     /**
@@ -522,7 +522,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
      */
     public function getUsersWithRole($roleName): array
     {
-        return $this->request('GET', "{$this->apiUrl}admin/realms/{$this->realm}/roles/{$roleName}/users");
+        return $this->request('GET', "{$this->apiUrl}admin/realms/{$this->realm}/roles/{$roleName}/users?first=0&max=-1");
     }
 
     /**
@@ -1422,6 +1422,10 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                     'headers' => [
                         'Accept' => 'application/json',
                     ],
+                    'query' => [
+                        'first' => 0,
+                        'max' => -1,
+                    ],
                 ]
             );
 
@@ -1479,6 +1483,10 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                 [
                     'headers' => [
                         'Accept' => 'application/json',
+                    ],
+                    'query' => [
+                        'first' => 0,
+                        'max' => -1,
                     ],
                 ]
             );
