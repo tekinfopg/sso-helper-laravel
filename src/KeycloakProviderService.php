@@ -177,20 +177,21 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                 [
                     'headers' => [
                         'Accept' => 'application/json',
-                        'Authorization' => "Bearer {$token}",
-                    ],
-                ]
-            );
+                    'Authorization' => "Bearer {$token}",
+                    'X-API-KEY' => $this->apiKey,
+                ],
+            ]
+        );
 
-            return json_decode($response->getBody(), true);
-        } catch (ClientException $e) {
-            // Check if token expired (401 Unauthorized)
-            if ($e->getResponse()->getStatusCode() === 401) {
-                // Try to refresh the token
-                $newToken = $this->refreshToken(Session::get('refresh_token'));
-                if ($newToken) {
-                    // Retry with the new token
-                    return $this->getUserByToken($newToken);
+        return json_decode($response->getBody(), true);
+    } catch (ClientException $e) {
+        // Check if token expired (401 Unauthorized)
+        if ($e->getResponse()->getStatusCode() === 401) {
+            // Try to refresh the token
+            $newToken = $this->refreshToken(Session::get('refresh_token'));
+            if ($newToken) {
+                // Retry with the new token
+                return $this->getUserByToken($newToken);
                 }
             }
             throw $e;
@@ -276,12 +277,13 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
             $response = $this->getHttpClient()->request($method, $url, [
                 'headers' => [
                     'Accept' => 'application/json',
-                    'Authorization' => "Bearer {$token}",
-                ],
-                'json' => $data,
-            ]);
+                'Authorization' => "Bearer {$token}",
+                'X-API-KEY' => $this->apiKey,
+            ],
+            'json' => $data,
+        ]);
 
-            $result = json_decode($response->getBody(), true);
+        $result = json_decode($response->getBody(), true);
 
             // Handle null response
             if ($result === null) {
@@ -577,18 +579,16 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                     'headers' => [
                         'Accept' => 'application/json',
                         'Authorization' => "Bearer {$token}",
+                        'X-API-KEY' => $this->apiKey,
                     ],
                 ]
             );
 
             return json_decode($response->getBody(), true);
         } catch (ClientException $e) {
-            // Check if token expired (401 Unauthorized)
             if ($e->getResponse()->getStatusCode() === 401) {
-                // Try to refresh the token
-                $newToken = $this->refreshToken(Session::get('refresh_token'));
+                $newToken = $this->refreshToken(Session::get($this->refreshTokenSessionKey));
                 if ($newToken) {
-                    // Retry with the new token
                     return $this->getCurrentUserSessions();
                 }
             }
@@ -615,18 +615,16 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                     'headers' => [
                         'Accept' => 'application/json',
                         'Authorization' => "Bearer {$token}",
+                        'X-API-KEY' => $this->apiKey,
                     ],
                 ]
             );
 
             return json_decode($response->getBody(), true);
         } catch (ClientException $e) {
-            // Check if token expired (401 Unauthorized)
             if ($e->getResponse()->getStatusCode() === 401) {
-                // Try to refresh the token
-                $newToken = $this->refreshToken(Session::get('refresh_token'));
+                $newToken = $this->refreshToken(Session::get($this->refreshTokenSessionKey));
                 if ($newToken) {
-                    // Retry with the new token
                     return $this->getCurrentUserClients();
                 }
             }
@@ -653,18 +651,16 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                     'headers' => [
                         'Accept' => 'application/json',
                         'Authorization' => "Bearer {$token}",
+                        'X-API-KEY' => $this->apiKey,
                     ],
                 ]
             );
 
             return json_decode($response->getBody(), true);
         } catch (ClientException $e) {
-            // Check if token expired (401 Unauthorized)
             if ($e->getResponse()->getStatusCode() === 401) {
-                // Try to refresh the token
-                $newToken = $this->refreshToken(Session::get('refresh_token'));
+                $newToken = $this->refreshToken(Session::get($this->refreshTokenSessionKey));
                 if ($newToken) {
-                    // Retry with the new token
                     return $this->getCurrentUserCredentials();
                 }
             }
@@ -691,6 +687,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                     'headers' => [
                         'Accept' => 'application/json',
                         'Authorization' => "Bearer {$token}",
+                        'X-API-KEY' => $this->apiKey,
                     ],
                 ]
             );
@@ -743,6 +740,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                     'headers' => [
                         'Accept' => 'application/json',
                         'Authorization' => "Bearer {$token}",
+                        'X-API-KEY' => $this->apiKey,
                     ],
                 ]
             );
@@ -796,6 +794,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                         'headers' => [
                             'Accept' => 'application/json',
                             'Content-Type' => 'application/json',
+                            'X-API-KEY' => $this->apiKey,
                         ],
                         'json' => [
                             "type" => "password",
@@ -854,6 +853,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                         'Accept' => 'application/json',
                         'Content-Type' => 'application/json',
                         'Authorization' => "Bearer {$token}",
+                        'X-API-KEY' => $this->apiKey,
                     ],
                     'json' => $data
                 ]
@@ -909,6 +909,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                     'headers' => [
                         'Accept' => 'application/json',
                         'Authorization' => "Bearer {$token}",
+                        'X-API-KEY' => $this->apiKey,
                     ],
                 ]
             );
@@ -959,6 +960,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                     'headers' => [
                         'Accept' => 'application/json',
                         'Authorization' => "Bearer {$token}",
+                        'X-API-KEY' => $this->apiKey,
                     ],
                 ]
             );
@@ -1009,10 +1011,11 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                     [
                         'headers' => [
                             'Accept' => 'application/json',
+                            'X-API-KEY' => $this->apiKey,
                         ],
                     ]
                 );
-    
+
                 if ($response->getStatusCode() === 204) {
                     return [
                         'success' => true,
@@ -1061,10 +1064,11 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                     [
                         'headers' => [
                             'Accept' => 'application/json',
+                            'X-API-KEY' => $this->apiKey,
                         ],
                     ]
                 );
-    
+
                 if ($response->getStatusCode() === 204) {
                     return [
                         'success' => true,
@@ -1112,6 +1116,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                     'headers' => [
                         'Accept' => 'application/json',
                         'Content' => 'application/x-www-form-urlencoded',
+                        'X-API-KEY' => $this->apiKey,
                     ],
                     'form_params' => [
                         'client_id' => $clientId,
@@ -1152,6 +1157,7 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
                 [
                     'headers' => [
                         'Accept' => 'application/json',
+                        'X-API-KEY' => $this->apiKey,
                     ],
                     'query' => [
                         'first' => 0,
