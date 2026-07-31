@@ -29,6 +29,13 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
     public $realm;
 
     /**
+     * The API key sent with every Keycloak request (X-API-KEY header).
+     *
+     * @var string
+     */
+    protected $apiKey;
+
+    /**
      * The field name for storing the Keycloak token.
      *
      * @var string
@@ -145,6 +152,11 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
 
         $this->baseUrl = Config::get('keycloak.base_url');
         $this->realm = Config::get('keycloak.realms');
+        $this->apiKey = Config::get('keycloak.api_key');
+
+        if (empty($this->apiKey)) {
+            throw new \RuntimeException('KEYCLOAK_API_KEY is not set. Add it to your .env and config/keycloak.php (api_key).');
+        }
         $this->tokenField = Config::get('keycloak.token_field', 'keycloak_token');
         $this->refreshTokenField = Config::get('keycloak.refresh_token_field', 'keycloak_refresh_token');
         $this->tokenSessionKey = Config::get('keycloak.session_access_token_field', 'access_token');
@@ -157,6 +169,29 @@ class KeycloakProviderService extends AbstractProvider implements ProviderInterf
         $this->connectTimeout = Config::get('keycloak.connect_timeout', 10);
     }
 
+
+    /**
+     * Get a Guzzle HTTP client with the API key header applied to every request.
+     *
+     * Overrides Socialite's getHttpClient so the X-API-KEY header is sent on all
+     * Keycloak calls (userinfo, token, and admin API) without touching each call site.
+     *
+     * @return \GuzzleHttp\Client
+     */
+    protected function getHttpClient()
+    {
+        if (is_null($this->httpClient)) {
+            $config = $this->guzzle;
+            $config['headers'] = array_merge(
+                $config['headers'] ?? [],
+                ['X-API-KEY' => $this->apiKey]
+            );
+
+            $this->httpClient = new \GuzzleHttp\Client($config);
+        }
+
+        return $this->httpClient;
+    }
 
     /**
      * Set the base URL for Keycloak.
