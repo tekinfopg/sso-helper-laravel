@@ -4,12 +4,22 @@ This package provides integration between Laravel and Keycloak, enabling Single 
 
 ## Requirements
 
-- PHP ^8.1
-- Laravel ^8.0 || ^9.0 || ^10.0 || ^11.0 || ^12.0
+| Version | PHP | Laravel |
+|---------|-----|---------|
+| **v2.0.0** (Laravel 5) | ^7.1 | ^5.5 \|\| ^5.6 \|\| ^5.7 \|\| ^5.8 |
+| **v1.x** (Laravel 8+) | ^8.1 | ^8.0 \|\| ^9.0 \|\| ^10.0 \|\| ^11.0 \|\| ^12.0 |
 
-## Installation
+### Laravel 5 Installation
 
-### Quick Installation (Recommended)
+```bash
+composer require tekinfopg/sso-helper-laravel:v2.0.0
+```
+
+> **Note:** For Laravel 5 projects, use version `v2.0.0`. For Laravel 8+, use the latest `v1.x` release.
+
+### Laravel 8+ Installation
+
+#### Quick Installation (Recommended)
 
 1. Require the package:
    ```bash
