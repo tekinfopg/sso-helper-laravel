@@ -10,18 +10,19 @@ class KeycloakServiceProvider extends ServiceProvider
     /**
      * Register 
      */
-    public function register(): void
+    public function register()
     {
         $this->app->bind(
             KeycloakProviderServiceInterface::class,
-            fn($app) =>
-            new KeycloakProviderService(
-                $app['request'],
-                Config::get('keycloak.client_id'),
-                Config::get('keycloak.client_secret'),
-                Config::get('keycloak.redirect'),
-                Config::get('keycloak.scopes', []),
-            )
+            function ($app) {
+                return new KeycloakProviderService(
+                    $app['request'],
+                    Config::get('keycloak.client_id'),
+                    Config::get('keycloak.client_secret'),
+                    Config::get('keycloak.redirect'),
+                    Config::get('keycloak.scopes', [])
+                );
+            }
         );
     }
 
